@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4年生 漢字テスト</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Yu Gothic', Meiryo, sans-serif;
+  background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 50%, #fd79a8 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 28px;
+  padding: 36px 32px;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── 設定画面 ─────────────────── */
+.app-title {
+  font-size: 2.4rem;
+  color: #6c5ce7;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.app-grade {
+  text-align: center;
+  color: #a29bfe;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 32px;
+}
+
+.section-label {
+  font-size: 0.95rem;
+  color: #636e72;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.select-btn {
+  flex: 1;
+  padding: 14px 8px;
+  border: 3px solid #e0e0e0;
+  border-radius: 16px;
+  background: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  color: #2d3436;
+  line-height: 1.5;
+}
+
+.select-btn:hover {
+  border-color: #a29bfe;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(108,92,231,0.15);
+}
+
+.select-btn.selected {
+  border-color: #6c5ce7;
+  background: #6c5ce7;
+  color: white;
+  box-shadow: 0 6px 20px rgba(108,92,231,0.4);
+  transform: translateY(-2px);
+}
+
+.btn-start {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  letter-spacing: 2px;
+}
+
+.btn-start:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(108,92,231,0.5);
+}
+
+.btn-start:disabled {
+  background: #dfe6e9;
+  cursor: not-allowed;
+  color: #b2bec3;
+}
+
+/* ── クイズ画面 ───────────────── */
+.progress-text {
+  text-align: right;
+  font-size: 0.9rem;
+  color: #636e72;
+  margin-bottom: 6px;
+}
+
+.progress-wrap {
+  background: #f0f0f0;
+  border-radius: 12px;
+  height: 14px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+  border-radius: 12px;
+  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.type-badge.reading { background: #74b9ff; color: white; }
+.type-badge.writing { background: #a29bfe; color: white; }
+
+.question-word {
+  text-align: center;
+  font-size: 3.6rem;
+  font-weight: bold;
+  color: #2d3436;
+  background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
+  border-radius: 20px;
+  padding: 28px 20px;
+  margin-bottom: 20px;
+  letter-spacing: 6px;
+  border: 2px solid #e8e8ff;
+}
+
+.question-hint {
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+
+.answer-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 3px solid #e0e0e0;
+  border-radius: 16px;
+  font-size: 1.4rem;
+  font-family: inherit;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.answer-input:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 4px rgba(108,92,231,0.12);
+}
+
+.btn-check {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.btn-check:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,184,148,0.4);
+}
+
+.btn-check:disabled { background: #dfe6e9; cursor: not-allowed; }
+
+/* ── 手書きキャンバス ─────────── */
+.canvas-wrapper {
+  width: 100%;
+  aspect-ratio: 1;
+  background: white;
+  border: 3px solid #a29bfe;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  cursor: crosshair;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#draw-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  touch-action: none;
+  display: block;
+}
+
+.canvas-btns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.btn-canvas {
+  flex: 1;
+  padding: 14px 8px;
+  border-radius: 14px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-erase {
+  background: #f0f0f0;
+  color: #636e72;
+}
+
+.btn-erase:hover { background: #e0e0e0; transform: translateY(-1px); }
+
+.btn-reveal {
+  background: linear-gradient(135deg, #fdcb6e, #e17055);
+  color: white;
+}
+
+.btn-reveal:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(225,112,85,0.4);
+}
+
+.btn-reveal:disabled {
+  background: #dfe6e9;
+  color: #b2bec3;
+  cursor: not-allowed;
+}
+
+.answer-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
+  border: 2px solid #a29bfe;
+  border-radius: 20px;
+  padding: 20px 16px;
+  margin-bottom: 12px;
+  animation: slideUp 0.3s ease;
+}
+
+.answer-label {
+  font-size: 1rem;
+  color: #636e72;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.correct-kanji {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #6c5ce7;
+  line-height: 1;
+}
+
+.self-check-label {
+  text-align: center;
+  color: #636e72;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.self-check-btns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.btn-self {
+  flex: 1;
+  padding: 16px 8px;
+  border: none;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-self-correct {
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+}
+
+.btn-self-correct:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,184,148,0.4);
+}
+
+.btn-self-wrong {
+  background: linear-gradient(135deg, #d63031, #e17055);
+  color: white;
+}
+
+.btn-self-wrong:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(214,48,49,0.4);
+}
+
+.btn-self:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.feedback {
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: bold;
+  padding: 14px 16px;
+  border-radius: 16px;
+  margin: 12px 0;
+  display: none;
+  line-height: 1.7;
+}
+
+.feedback.correct {
+  display: block;
+  background: #d4edda;
+  color: #155724;
+}
+
+.feedback.wrong {
+  display: block;
+  background: #fff3cd;
+  color: #856404;
+}
+
+.btn-next {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.15rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  display: none;
+  letter-spacing: 1px;
+}
+
+.btn-next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(108,92,231,0.4);
+}
+
+/* ── 結果画面 ─────────────────── */
+.result-title {
+  font-size: 1.8rem;
+  color: #2d3436;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.stars {
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 14px;
+  min-height: 52px;
+}
+
+.stars span {
+  display: inline-block;
+  opacity: 0;
+  animation: starPop 0.45s ease forwards;
+}
+.stars span:nth-child(1) { animation-delay: 0.1s; }
+.stars span:nth-child(2) { animation-delay: 0.28s; }
+.stars span:nth-child(3) { animation-delay: 0.46s; }
+
+@keyframes starPop {
+  0%   { opacity: 0; transform: scale(0) rotate(-20deg); }
+  65%  { transform: scale(1.35) rotate(10deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+.score-area {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 12px 36px rgba(108,92,231,0.4);
+}
+
+.score-num { font-size: 3.2rem; font-weight: bold; color: white; line-height: 1; }
+.score-den { font-size: 1rem; color: rgba(255,255,255,0.85); margin-top: 4px; }
+.score-msg { font-size: 1.4rem; font-weight: bold; color: #2d3436; margin-bottom: 6px; }
+.score-sub { color: #636e72; font-size: 0.95rem; }
+
+.review-wrap {
+  background: #f8f9ff;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin: 16px 0 20px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid #e8e8ff;
+  gap: 8px;
+}
+
+.review-item:last-child { border-bottom: none; }
+.ri-word { font-weight: bold; font-size: 1.05rem; color: #2d3436; }
+.ri-reading { color: #888; font-size: 0.88rem; }
+.ri-status { font-size: 1.2rem; flex-shrink: 0; }
+
+.btn-retry {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #fd79a8, #e84393);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.btn-retry:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(232,67,147,0.4);
+}
+
+.btn-home {
+  width: 100%;
+  padding: 14px;
+  background: white;
+  color: #6c5ce7;
+  border: 3px solid #6c5ce7;
+  border-radius: 16px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.btn-home:hover { background: #f8f9ff; transform: translateY(-2px); }
+
+/* ── アニメーション ───────────── */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%      { transform: translateX(-10px); }
+  40%      { transform: translateX(10px); }
+  60%      { transform: translateX(-7px); }
+  80%      { transform: translateX(7px); }
+}
+
+.shake { animation: shake 0.42s ease; }
+
+/* ── レスポンシブ ─────────────── */
+@media (max-width: 480px) {
+  .card { padding: 28px 18px; }
+  .app-title { font-size: 1.9rem; }
+  .question-word { font-size: 2.8rem; }
+  .correct-kanji { font-size: 3.2rem; }
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- ========== 設定画面 ========== -->
+  <div id="screen-start" class="screen active">
+    <div class="app-title">📖 漢字テスト</div>
+    <div class="app-grade">小学4年生</div>
+
+    <div class="section-label">📅 学期を選ぼう</div>
+    <div class="btn-group" id="grp-semester">
+      <button class="select-btn" onclick="pick('semester',1,this)">1学期</button>
+      <button class="select-btn" onclick="pick('semester',2,this)">2学期</button>
+      <button class="select-btn" onclick="pick('semester',3,this)">3学期</button>
+    </div>
+
+    <div class="section-label">📝 テストの種類を選ぼう</div>
+    <div class="btn-group" id="grp-type">
+      <button class="select-btn" onclick="pick('type','reading',this)">
+        📖 読みテスト<br><small style="font-weight:normal;font-size:0.78em">漢字→ひらがな</small>
+      </button>
+      <button class="select-btn" onclick="pick('type','writing',this)">
+        ✏️ 書きテスト<br><small style="font-weight:normal;font-size:0.78em">ひらがな→手書き</small>
+      </button>
+    </div>
+
+    <button class="btn-start" id="btn-start" onclick="startQuiz()" disabled>
+      スタート！🚀
+    </button>
+  </div>
+
+  <!-- ========== クイズ画面 ========== -->
+  <div id="screen-quiz" class="screen">
+    <div class="progress-text" id="prog-text">問題 1 / 10</div>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="prog-bar" style="width:10%"></div>
+    </div>
+    <div id="question-area"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQ()">つぎへ →</button>
+  </div>
+
+  <!-- ========== 結果画面 ========== -->
+  <div id="screen-result" class="screen">
+    <div class="result-title">📊 テスト結果</div>
+    <div class="stars" id="stars"></div>
+    <div class="score-area">
+      <div class="score-circle">
+        <div class="score-num" id="sc-num">0</div>
+        <div class="score-den" id="sc-den">/ 10もん</div>
+      </div>
+      <div class="score-msg" id="sc-msg"></div>
+      <div class="score-sub" id="sc-sub"></div>
+    </div>
+    <div class="review-wrap" id="review"></div>
+    <button class="btn-retry" onclick="startQuiz()">もう一度チャレンジ！🔥</button>
+    <button class="btn-home" onclick="goHome()">🏠 ホームにもどる</button>
+  </div>
+
+</div>
+
+<script>
+// ================================================================
+//  漢字データ（各学期 20問）
+// ================================================================
+const DATA = {
+  // ── 1学期（64字）──────────────────────────────────────────────
+  1: [
+    { word:'愛情',   reading:'あいじょう' },  // 愛
+    { word:'案内',   reading:'あんない' },    // 案
+    { word:'以上',   reading:'いじょう' },    // 以
+    { word:'衣服',   reading:'いふく' },      // 衣
+    { word:'位置',   reading:'いち' },        // 位
+    { word:'囲む',   reading:'かこむ' },      // 囲
+    { word:'胃袋',   reading:'いぶくろ' },    // 胃
+    { word:'印刷',   reading:'いんさつ' },    // 印
+    { word:'英語',   reading:'えいご' },      // 英
+    { word:'栄養',   reading:'えいよう' },    // 栄
+    { word:'塩分',   reading:'えんぶん' },    // 塩
+    { word:'億円',   reading:'おくえん' },    // 億
+    { word:'加工',   reading:'かこう' },      // 加
+    { word:'果物',   reading:'くだもの' },    // 果
+    { word:'貨物',   reading:'かもつ' },      // 貨
+    { word:'課題',   reading:'かだい' },      // 課
+    { word:'新芽',   reading:'しんめ' },      // 芽
+    { word:'改良',   reading:'かいりょう' },  // 改
+    { word:'機械',   reading:'きかい' },      // 械
+    { word:'各地',   reading:'かくち' },      // 各
+    { word:'覚える', reading:'おぼえる' },    // 覚
+    { word:'完成',   reading:'かんせい' },    // 完
+    { word:'官庁',   reading:'かんちょう' },  // 官
+    { word:'管理',   reading:'かんり' },      // 管
+    { word:'観察',   reading:'かんさつ' },    // 観
+    { word:'関係',   reading:'かんけい' },    // 関
+    { word:'希望',   reading:'きぼう' },      // 希
+    { word:'季節',   reading:'きせつ' },      // 季
+    { word:'旗',     reading:'はた' },        // 旗
+    { word:'器具',   reading:'きぐ' },        // 器
+    { word:'飛行機', reading:'ひこうき' },    // 機
+    { word:'会議',   reading:'かいぎ' },      // 議
+    { word:'要求',   reading:'ようきゅう' },  // 求
+    { word:'泣く',   reading:'なく' },        // 泣
+    { word:'給食',   reading:'きゅうしょく' },// 給
+    { word:'挙手',   reading:'きょしゅ' },    // 挙
+    { word:'漁業',   reading:'ぎょぎょう' },  // 漁
+    { word:'共通',   reading:'きょうつう' },  // 共
+    { word:'協力',   reading:'きょうりょく' },// 協
+    { word:'鏡',     reading:'かがみ' },      // 鏡
+    { word:'競争',   reading:'きょうそう' },  // 競
+    { word:'北極',   reading:'ほっきょく' },  // 極
+    { word:'熊',     reading:'くま' },        // 熊
+    { word:'訓練',   reading:'くんれん' },    // 訓
+    { word:'軍人',   reading:'ぐんじん' },    // 軍
+    { word:'郡部',   reading:'ぐんぶ' },      // 郡
+    { word:'直径',   reading:'ちょっけい' },  // 径
+    { word:'大型',   reading:'おおがた' },    // 型
+    { word:'景色',   reading:'けしき' },      // 景
+    { word:'芸術',   reading:'げいじゅつ' },  // 芸
+    { word:'結果',   reading:'けっか' },      // 結
+    { word:'健全',   reading:'けんぜん' },    // 健
+    { word:'経験',   reading:'けいけん' },    // 験
+    { word:'固い',   reading:'かたい' },      // 固
+    { word:'成功',   reading:'せいこう' },    // 功
+    { word:'好物',   reading:'こうぶつ' },    // 好
+    { word:'天候',   reading:'てんこう' },    // 候
+    { word:'航海',   reading:'こうかい' },    // 航
+    { word:'健康',   reading:'けんこう' },    // 康
+    { word:'報告',   reading:'ほうこく' },    // 告
+    { word:'時差',   reading:'じさ' },        // 差
+    { word:'野菜',   reading:'やさい' },      // 菜
+    { word:'最高',   reading:'さいこう' },    // 最
+    { word:'材料',   reading:'ざいりょう' },  // 材
+  ],
+  // ── 2学期（64字）──────────────────────────────────────────────
+  2: [
+    { word:'昨日',   reading:'きのう' },      // 昨
+    { word:'刷新',   reading:'さっしん' },    // 刷
+    { word:'察する', reading:'さっする' },    // 察
+    { word:'参加',   reading:'さんか' },      // 参
+    { word:'産業',   reading:'さんぎょう' },  // 産
+    { word:'散歩',   reading:'さんぽ' },      // 散
+    { word:'残念',   reading:'ざんねん' },    // 残
+    { word:'武士',   reading:'ぶし' },        // 士
+    { word:'氏名',   reading:'しめい' },      // 氏
+    { word:'歴史',   reading:'れきし' },      // 史
+    { word:'司会',   reading:'しかい' },      // 司
+    { word:'試合',   reading:'しあい' },      // 試
+    { word:'児童',   reading:'じどう' },      // 児
+    { word:'政治',   reading:'せいじ' },      // 治
+    { word:'辞書',   reading:'じしょ' },      // 辞
+    { word:'失敗',   reading:'しっぱい' },    // 失
+    { word:'借りる', reading:'かりる' },      // 借
+    { word:'種類',   reading:'しゅるい' },    // 種
+    { word:'周り',   reading:'まわり' },      // 周
+    { word:'祝日',   reading:'しゅくじつ' },  // 祝
+    { word:'順番',   reading:'じゅんばん' },  // 順
+    { word:'初めて', reading:'はじめて' },    // 初
+    { word:'松',     reading:'まつ' },        // 松
+    { word:'笑顔',   reading:'えがお' },      // 笑
+    { word:'合唱',   reading:'がっしょう' },  // 唱
+    { word:'焼く',   reading:'やく' },        // 焼
+    { word:'象',     reading:'ぞう' },        // 象
+    { word:'照らす', reading:'てらす' },      // 照
+    { word:'賞状',   reading:'しょうじょう' },// 賞
+    { word:'大臣',   reading:'だいじん' },    // 臣
+    { word:'自信',   reading:'じしん' },      // 信
+    { word:'成長',   reading:'せいちょう' },  // 成
+    { word:'反省',   reading:'はんせい' },    // 省
+    { word:'清潔',   reading:'せいけつ' },    // 清
+    { word:'静か',   reading:'しずか' },      // 静
+    { word:'座席',   reading:'ざせき' },      // 席
+    { word:'面積',   reading:'めんせき' },    // 積
+    { word:'折り紙', reading:'おりがみ' },    // 折
+    { word:'節約',   reading:'せつやく' },    // 節
+    { word:'説明',   reading:'せつめい' },    // 説
+    { word:'浅い',   reading:'あさい' },      // 浅
+    { word:'戦争',   reading:'せんそう' },    // 戦
+    { word:'選手',   reading:'せんしゅ' },    // 選
+    { word:'自然',   reading:'しぜん' },      // 然
+    { word:'争う',   reading:'あらそう' },    // 争
+    { word:'倉庫',   reading:'そうこ' },      // 倉
+    { word:'巣',     reading:'す' },          // 巣
+    { word:'束',     reading:'たば' },        // 束
+    { word:'右側',   reading:'みぎがわ' },    // 側
+    { word:'続く',   reading:'つづく' },      // 続
+    { word:'卒業',   reading:'そつぎょう' },  // 卒
+    { word:'孫',     reading:'まご' },        // 孫
+    { word:'地帯',   reading:'ちたい' },      // 帯
+    { word:'部隊',   reading:'ぶたい' },      // 隊
+    { word:'友達',   reading:'ともだち' },    // 達
+    { word:'単語',   reading:'たんご' },      // 単
+    { word:'装置',   reading:'そうち' },      // 置
+    { word:'仲間',   reading:'なかま' },      // 仲
+    { word:'貯金',   reading:'ちょきん' },    // 貯
+    { word:'兆円',   reading:'ちょうえん' },  // 兆
+    { word:'大腸',   reading:'だいちょう' },  // 腸
+    { word:'低い',   reading:'ひくい' },      // 低
+    { word:'底',     reading:'そこ' },        // 底
+    { word:'目的',   reading:'もくてき' },    // 的
+  ],
+  // ── 3学期（60字）──────────────────────────────────────────────
+  3: [
+    { word:'辞典',     reading:'じてん' },        // 典
+    { word:'伝統',     reading:'でんとう' },      // 伝
+    { word:'生徒',     reading:'せいと' },        // 徒
+    { word:'努力',     reading:'どりょく' },      // 努
+    { word:'灯台',     reading:'とうだい' },      // 灯
+    { word:'働く',     reading:'はたらく' },      // 働
+    { word:'特別',     reading:'とくべつ' },      // 特
+    { word:'道徳',     reading:'どうとく' },      // 徳
+    { word:'栃木',     reading:'とちぎ' },        // 栃
+    { word:'奈良',     reading:'なら' },          // 奈
+    { word:'梨',       reading:'なし' },          // 梨
+    { word:'熱心',     reading:'ねっしん' },      // 熱
+    { word:'記念',     reading:'きねん' },        // 念
+    { word:'勝敗',     reading:'しょうはい' },    // 敗
+    { word:'梅',       reading:'うめ' },          // 梅
+    { word:'博士',     reading:'はかせ' },        // 博
+    { word:'ご飯',     reading:'ごはん' },        // 飯
+    { word:'費用',     reading:'ひよう' },        // 費
+    { word:'必要',     reading:'ひつよう' },      // 必
+    { word:'投票',     reading:'とうひょう' },    // 票
+    { word:'目標',     reading:'もくひょう' },    // 標
+    { word:'不思議',   reading:'ふしぎ' },        // 不
+    { word:'夫婦',     reading:'ふうふ' },        // 夫
+    { word:'付近',     reading:'ふきん' },        // 付
+    { word:'政府',     reading:'せいふ' },        // 府
+    { word:'副校長',   reading:'ふくこうちょう' },// 副
+    { word:'小麦粉',   reading:'こむぎこ' },      // 粉
+    { word:'兵士',     reading:'へいし' },        // 兵
+    { word:'別れる',   reading:'わかれる' },      // 別
+    { word:'辺り',     reading:'あたり' },        // 辺
+    { word:'変化',     reading:'へんか' },        // 変
+    { word:'便利',     reading:'べんり' },        // 便
+    { word:'包む',     reading:'つつむ' },        // 包
+    { word:'方法',     reading:'ほうほう' },      // 法
+    { word:'望む',     reading:'のぞむ' },        // 望
+    { word:'牧場',     reading:'ぼくじょう' },    // 牧
+    { word:'週末',     reading:'しゅうまつ' },    // 末
+    { word:'満足',     reading:'まんぞく' },      // 満
+    { word:'未来',     reading:'みらい' },        // 未
+    { word:'国民',     reading:'こくみん' },      // 民
+    { word:'無理',     reading:'むり' },          // 無
+    { word:'予約',     reading:'よやく' },        // 約
+    { word:'勇気',     reading:'ゆうき' },        // 勇
+    { word:'重要',     reading:'じゅうよう' },    // 要
+    { word:'養う',     reading:'やしなう' },      // 養
+    { word:'入浴',     reading:'にゅうよく' },    // 浴
+    { word:'利用',     reading:'りよう' },        // 利
+    { word:'陸地',     reading:'りくち' },        // 陸
+    { word:'良心',     reading:'りょうしん' },    // 良
+    { word:'料理',     reading:'りょうり' },      // 料
+    { word:'大量',     reading:'たいりょう' },    // 量
+    { word:'車輪',     reading:'しゃりん' },      // 輪
+    { word:'人類',     reading:'じんるい' },      // 類
+    { word:'命令',     reading:'めいれい' },      // 令
+    { word:'冷たい',   reading:'つめたい' },      // 冷
+    { word:'例えば',   reading:'たとえば' },      // 例
+    { word:'連絡',     reading:'れんらく' },      // 連
+    { word:'老人',     reading:'ろうじん' },      // 老
+    { word:'苦労',     reading:'くろう' },        // 労
+    { word:'記録',     reading:'きろく' },        // 録
+  ]
+};
+
+// ================================================================
+//  状態
+// ================================================================
+let sel      = { semester: null, type: null };
+let qs       = [];
+let idx      = 0;
+let score    = 0;
+let answered = false;
+let results  = [];
+
+// ── キャンバス描画用 ──────────────────────────────────────────
+let drawCtx    = null;
+let isDrawing  = false;
+let canvasCSS  = 0;   // キャンバスの表示サイズ（CSS px）
+
+// ================================================================
+//  設定画面
+// ================================================================
+function pick(kind, val, btn) {
+  sel[kind] = val;
+  const grpId = kind === 'semester' ? 'grp-semester' : 'grp-type';
+  document.querySelectorAll(`#${grpId} .select-btn`)
+          .forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('btn-start').disabled = !(sel.semester && sel.type);
+}
+
+// ================================================================
+//  クイズ開始
+// ================================================================
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function startQuiz() {
+  qs       = shuffle([...DATA[sel.semester]]).slice(0, 10);
+  idx      = 0;
+  score    = 0;
+  answered = false;
+  results  = [];
+  showScreen('screen-quiz');
+  renderQ();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ================================================================
+//  問題を表示
+// ================================================================
+function renderQ() {
+  answered = false;
+  drawCtx  = null;
+  const q     = qs[idx];
+  const total = qs.length;
+
+  // 進捗更新
+  document.getElementById('prog-text').textContent = `問題 ${idx + 1} / ${total}`;
+  document.getElementById('prog-bar').style.width  = `${((idx + 1) / total) * 100}%`;
+
+  // フィードバック・次へボタンをリセット
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+  const nb = document.getElementById('btn-next');
+  nb.style.display = 'none';
+
+  const area = document.getElementById('question-area');
+
+  if (sel.type === 'reading') {
+    // ── 読みテスト ──────────────────────
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:14px;">
+        <span class="type-badge reading">📖 読みテスト</span>
+      </div>
+      <div class="question-word">${q.word}</div>
+      <p class="question-hint">ひらがなで読みかたを入力してね</p>
+      <input class="answer-input" id="ans-input" type="text"
+             placeholder="ひらがなで入力…" autocomplete="off" autocorrect="off" autocapitalize="none">
+      <button class="btn-check" id="btn-check">こたえる ✔</button>
+    `;
+    const inp = document.getElementById('ans-input');
+    const chk = document.getElementById('btn-check');
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkReading(); });
+    chk.addEventListener('click', checkReading);
+    setTimeout(() => inp.focus(), 60);
+
+  } else {
+    // ── 書きテスト（手書き）──────────────────────
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:14px;">
+        <span class="type-badge writing">✏️ 書きテスト</span>
+      </div>
+      <div class="question-word" style="font-size:2.4rem;letter-spacing:4px;padding:20px;">${q.reading}</div>
+      <p class="question-hint">↓ 枠の中に漢字を手書きしてね</p>
+      <div class="canvas-wrapper" id="canvas-wrapper">
+        <canvas id="draw-canvas"></canvas>
+      </div>
+      <div class="canvas-btns">
+        <button class="btn-canvas btn-erase" id="btn-erase">消す 🗑️</button>
+        <button class="btn-canvas btn-reveal" id="btn-reveal">正解を見る 👀</button>
+      </div>
+      <div id="answer-reveal" style="display:none;">
+        <div class="answer-display">
+          <div class="answer-label">正解：</div>
+          <div class="correct-kanji" id="correct-kanji"></div>
+        </div>
+        <p class="self-check-label">自分で採点してね</p>
+        <div class="self-check-btns">
+          <button class="btn-self btn-self-correct" id="btn-self-correct">✅ 合ってた！</button>
+          <button class="btn-self btn-self-wrong"   id="btn-self-wrong">❌ 間違ってた</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btn-erase').addEventListener('click', clearCanvas);
+    document.getElementById('btn-reveal').addEventListener('click', revealAnswer);
+    document.getElementById('btn-self-correct').addEventListener('click', () => selfScore(true));
+    document.getElementById('btn-self-wrong').addEventListener('click',   () => selfScore(false));
+
+    // DOMが描画されてからキャンバスを初期化
+    setTimeout(initCanvas, 0);
+  }
+}
+
+// ================================================================
+//  キャンバス初期化
+// ================================================================
+function initCanvas() {
+  const canvas  = document.getElementById('draw-canvas');
+  const wrapper = document.getElementById('canvas-wrapper');
+  if (!canvas || !wrapper) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  canvasCSS = wrapper.clientWidth;
+
+  // 高解像度対応
+  canvas.width  = Math.round(canvasCSS * dpr);
+  canvas.height = Math.round(canvasCSS * dpr);
+
+  drawCtx = canvas.getContext('2d');
+  drawCtx.scale(dpr, dpr);
+
+  drawGuideLines();
+
+  // 描画スタイル
+  drawCtx.strokeStyle = '#1a1a2e';
+  drawCtx.lineWidth   = 5;
+  drawCtx.lineCap     = 'round';
+  drawCtx.lineJoin    = 'round';
+
+  // マウスイベント
+  canvas.addEventListener('mousedown',  onMouseDown);
+  canvas.addEventListener('mousemove',  onMouseMove);
+  canvas.addEventListener('mouseup',    onMouseUp);
+  canvas.addEventListener('mouseleave', onMouseUp);
+
+  // タッチイベント（スマホ・タブレット対応）
+  canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+  canvas.addEventListener('touchmove',  onTouchMove,  { passive: false });
+  canvas.addEventListener('touchend',   onTouchEnd,   { passive: false });
+}
+
+// ── ガイドライン描画 ───────────────────────────────────────────
+function drawGuideLines() {
+  if (!drawCtx) return;
+  const s = canvasCSS;
+  const m = 10;
+  drawCtx.save();
+  drawCtx.strokeStyle = '#d0d0e8';
+  drawCtx.lineWidth   = 1;
+  drawCtx.setLineDash([5, 5]);
+  drawCtx.beginPath();
+  drawCtx.moveTo(s / 2, m);       drawCtx.lineTo(s / 2, s - m);  // 縦
+  drawCtx.moveTo(m, s / 2);       drawCtx.lineTo(s - m, s / 2);  // 横
+  drawCtx.stroke();
+  drawCtx.setLineDash([]);
+  drawCtx.restore();
+}
+
+// ── キャンバスリセット ─────────────────────────────────────────
+function clearCanvas() {
+  if (!drawCtx) return;
+  drawCtx.clearRect(0, 0, canvasCSS, canvasCSS);
+  drawGuideLines();
+  drawCtx.strokeStyle = '#1a1a2e';
+  drawCtx.lineWidth   = 5;
+  drawCtx.lineCap     = 'round';
+  drawCtx.lineJoin    = 'round';
+}
+
+// ── マウス描画 ─────────────────────────────────────────────────
+function getPos(canvas, e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+function onMouseDown(e) {
+  isDrawing = true;
+  const { x, y } = getPos(e.target, e);
+  drawCtx.beginPath();
+  drawCtx.moveTo(x, y);
+}
+
+function onMouseMove(e) {
+  if (!isDrawing) return;
+  const { x, y } = getPos(e.target, e);
+  drawCtx.lineTo(x, y);
+  drawCtx.stroke();
+  drawCtx.beginPath();
+  drawCtx.moveTo(x, y);
+}
+
+function onMouseUp() {
+  if (isDrawing) {
+    drawCtx.beginPath();
+    isDrawing = false;
+  }
+}
+
+// ── タッチ描画 ─────────────────────────────────────────────────
+function getTouchPos(canvas, touch) {
+  const r = canvas.getBoundingClientRect();
+  return { x: touch.clientX - r.left, y: touch.clientY - r.top };
+}
+
+function onTouchStart(e) {
+  e.preventDefault();
+  isDrawing = true;
+  const { x, y } = getTouchPos(e.target, e.touches[0]);
+  drawCtx.beginPath();
+  drawCtx.moveTo(x, y);
+}
+
+function onTouchMove(e) {
+  e.preventDefault();
+  if (!isDrawing) return;
+  const { x, y } = getTouchPos(e.target, e.touches[0]);
+  drawCtx.lineTo(x, y);
+  drawCtx.stroke();
+  drawCtx.beginPath();
+  drawCtx.moveTo(x, y);
+}
+
+function onTouchEnd(e) {
+  e.preventDefault();
+  if (isDrawing) {
+    drawCtx.beginPath();
+    isDrawing = false;
+  }
+}
+
+// ================================================================
+//  正解を表示
+// ================================================================
+function revealAnswer() {
+  const q = qs[idx];
+  document.getElementById('correct-kanji').textContent = q.word;
+  document.getElementById('answer-reveal').style.display = 'block';
+  document.getElementById('btn-reveal').disabled = true;
+}
+
+// ================================================================
+//  自己採点
+// ================================================================
+function selfScore(isCorrect) {
+  if (answered) return;
+  answered = true;
+
+  const q = qs[idx];
+  results.push({ word: q.word, reading: q.reading, ok: isCorrect });
+  if (isCorrect) score++;
+
+  document.getElementById('btn-self-correct').disabled = true;
+  document.getElementById('btn-self-wrong').disabled   = true;
+
+  const fb = document.getElementById('feedback');
+  if (isCorrect) {
+    fb.className = 'feedback correct';
+    fb.innerHTML = '✅ せいかい！ すばらしい！🎉';
+  } else {
+    fb.className = 'feedback wrong';
+    fb.innerHTML = '❌ ざんねん… またれんしゅうしよう！💪';
+  }
+
+  const nb = document.getElementById('btn-next');
+  nb.style.display = 'block';
+  nb.textContent   = idx === qs.length - 1 ? '結果を見る 🎊' : 'つぎへ →';
+}
+
+// ================================================================
+//  読みテスト 採点
+// ================================================================
+function checkReading() {
+  if (answered) return;
+  const inp = document.getElementById('ans-input');
+  const val = inp.value.trim();
+  if (!val) return;
+
+  answered = true;
+  inp.disabled = true;
+  document.getElementById('btn-check').disabled = true;
+
+  const q  = qs[idx];
+  const ok = val === q.reading;
+  results.push({ word: q.word, reading: q.reading, ok });
+  if (ok) score++;
+  showFeedback(ok, q.reading, val);
+}
+
+// ================================================================
+//  フィードバック表示（読みテスト用）
+// ================================================================
+function showFeedback(ok, correctReading, userInput) {
+  const fb = document.getElementById('feedback');
+  if (ok) {
+    fb.className = 'feedback correct';
+    fb.innerHTML = '✅ せいかい！ すばらしい！🎉';
+  } else {
+    fb.className = 'feedback wrong';
+    fb.innerHTML = userInput
+      ? `❌ ざんねん…<br>あなたの答え：「${userInput}」<br>正しい答え：「<strong>${correctReading}</strong>」`
+      : `❌ ざんねん…<br>正しい答えは「<strong>${correctReading}</strong>」だよ`;
+  }
+  const nb = document.getElementById('btn-next');
+  nb.style.display = 'block';
+  nb.textContent   = idx === qs.length - 1 ? '結果を見る 🎊' : 'つぎへ →';
+}
+
+// ================================================================
+//  次の問題 / 結果画面へ
+// ================================================================
+function nextQ() {
+  idx++;
+  if (idx >= qs.length) showResult();
+  else renderQ();
+}
+
+// ================================================================
+//  結果画面
+// ================================================================
+function showResult() {
+  showScreen('screen-result');
+  const total = qs.length;
+  document.getElementById('sc-num').textContent = score;
+  document.getElementById('sc-den').textContent = `/ ${total}もん`;
+
+  const pct = score / total;
+  let stars = '', msg = '', sub = '';
+
+  if (pct >= 1.0) {
+    stars = '<span>⭐</span><span>⭐</span><span>⭐</span>';
+    msg   = '🎉 まんてん！ かんぺき！！';
+    sub   = 'ぜんもん正解！ほんとうにすごいね！';
+  } else if (pct >= 0.8) {
+    stars = '<span>⭐</span><span>⭐</span>';
+    msg   = 'とってもよくできました！';
+    sub   = 'あとすこし！もう一度チャレンジしよう！';
+  } else if (pct >= 0.6) {
+    stars = '<span>⭐</span>';
+    msg   = 'よくがんばりました！';
+    sub   = 'まちがえた問題をくりかえし練習しよう！';
+  } else {
+    stars = '';
+    msg   = 'もっと練習しよう！💪';
+    sub   = 'なんども練習すれば必ず覚えられるよ！';
+  }
+
+  document.getElementById('stars').innerHTML    = stars;
+  document.getElementById('sc-msg').textContent = msg;
+  document.getElementById('sc-sub').textContent = sub;
+
+  document.getElementById('review').innerHTML = results.map(r => `
+    <div class="review-item">
+      <div>
+        <span class="ri-word">${r.word}</span>
+        <span class="ri-reading">（${r.reading}）</span>
+      </div>
+      <span class="ri-status">${r.ok ? '✅' : '❌'}</span>
+    </div>
+  `).join('');
+}
+
+function goHome() {
+  showScreen('screen-start');
+}
+</script>
+</body>
+</html>
