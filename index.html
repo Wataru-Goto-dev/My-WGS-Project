@@ -92,6 +92,20 @@ body {
   transform: translateY(-2px);
 }
 
+.select-btn.unavailable {
+  border-color: #e0e0e0;
+  background: #f5f5f5;
+  color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.select-btn.unavailable:hover {
+  border-color: #e0e0e0;
+  transform: none;
+  box-shadow: none;
+}
+
 .btn-start {
   width: 100%;
   padding: 18px;
@@ -118,7 +132,117 @@ body {
   color: #b2bec3;
 }
 
+.btn-pdf {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-top: 12px;
+  letter-spacing: 1px;
+}
+
+.btn-pdf:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,184,148,0.4);
+}
+
+/* ── PDF モーダル ──────────────── */
+.pdf-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.pdf-overlay.open { display: flex; }
+
+.pdf-modal {
+  background: white;
+  border-radius: 24px;
+  padding: 30px 26px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+  animation: slideUp 0.3s ease;
+}
+
+.pdf-modal-title {
+  font-size: 1.35rem;
+  color: #00b894;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.btn-pdf-gen {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #e17055, #d63031);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+
+.btn-pdf-gen:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(214,48,49,0.4);
+}
+
+.btn-pdf-gen:disabled {
+  background: #dfe6e9;
+  color: #b2bec3;
+  cursor: not-allowed;
+}
+
+.btn-modal-close {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  color: #636e72;
+  border: 2px solid #e0e0e0;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.btn-modal-close:hover { background: #f8f9ff; }
+
 /* ── クイズ画面 ───────────────── */
+.quiz-mode-info {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #fff;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+  border-radius: 20px;
+  padding: 5px 14px;
+  margin-bottom: 12px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  width: 100%;
+}
+
 .progress-text {
   text-align: right;
   font-size: 0.9rem;
@@ -152,6 +276,20 @@ body {
 
 .type-badge.reading { background: #74b9ff; color: white; }
 .type-badge.writing { background: #a29bfe; color: white; }
+.type-badge.fill    { background: #00b894; color: white; }
+
+.question-sentence {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2d3436;
+  background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
+  border-radius: 20px;
+  padding: 22px 20px;
+  margin-bottom: 20px;
+  line-height: 1.9;
+  border: 2px solid #e8e8ff;
+  text-align: center;
+}
 
 .question-word {
   text-align: center;
@@ -539,32 +677,48 @@ body {
   <!-- ========== 設定画面 ========== -->
   <div id="screen-start" class="screen active">
     <div class="app-title">📖 漢字テスト</div>
-    <div class="app-grade">小学4年生</div>
+    <div class="app-grade">小学3・4年生</div>
+
+    <div class="section-label">🎓 学年を選ぼう</div>
+    <div class="btn-group" id="grp-grade">
+      <button class="select-btn" onclick="pick('grade',3,this)">3年生</button>
+      <button class="select-btn" onclick="pick('grade',4,this)">4年生</button>
+    </div>
 
     <div class="section-label">📅 学期を選ぼう</div>
     <div class="btn-group" id="grp-semester">
-      <button class="select-btn" onclick="pick('semester',1,this)">1学期</button>
-      <button class="select-btn" onclick="pick('semester',2,this)">2学期</button>
-      <button class="select-btn" onclick="pick('semester',3,this)">3学期</button>
+      <button class="select-btn" id="sem-btn-1" onclick="pick('semester',1,this)">1学期</button>
+      <button class="select-btn" id="sem-btn-2" onclick="pick('semester',2,this)">2学期</button>
+      <button class="select-btn" id="sem-btn-3" onclick="pick('semester',3,this)">3学期</button>
     </div>
 
-    <div class="section-label">📝 テストの種類を選ぼう</div>
-    <div class="btn-group" id="grp-type">
-      <button class="select-btn" onclick="pick('type','reading',this)">
-        📖 読みテスト<br><small style="font-weight:normal;font-size:0.78em">漢字→ひらがな</small>
+    <div class="section-label">📝 問題の種類を選ぼう</div>
+    <div class="btn-group" style="flex-wrap:wrap;" id="grp-type">
+      <button class="select-btn" onclick="pick('type','random',this)" style="min-width:45%;">
+        🎲 ランダム<br><small style="font-weight:normal;font-size:0.78em">読み・書き・穴埋め混合</small>
       </button>
-      <button class="select-btn" onclick="pick('type','writing',this)">
-        ✏️ 書きテスト<br><small style="font-weight:normal;font-size:0.78em">ひらがな→手書き</small>
+      <button class="select-btn" onclick="pick('type','reading',this)" style="min-width:45%;">
+        📖 読みのみ<br><small style="font-weight:normal;font-size:0.78em">漢字→ひらがな</small>
+      </button>
+      <button class="select-btn" onclick="pick('type','writing',this)" style="min-width:45%;">
+        ✏️ 書きのみ<br><small style="font-weight:normal;font-size:0.78em">ひらがな→手書き</small>
+      </button>
+      <button class="select-btn" onclick="pick('type','fill',this)" style="min-width:45%;">
+        📝 穴埋めのみ<br><small style="font-weight:normal;font-size:0.78em">文中の（　）に記入</small>
       </button>
     </div>
 
     <button class="btn-start" id="btn-start" onclick="startQuiz()" disabled>
       スタート！🚀
     </button>
+    <button class="btn-pdf" onclick="openPdfModal()">
+      📄 プリントテストを作る
+    </button>
   </div>
 
   <!-- ========== クイズ画面 ========== -->
   <div id="screen-quiz" class="screen">
+    <div class="quiz-mode-info" id="quiz-mode-info"></div>
     <div class="progress-text" id="prog-text">問題 1 / 10</div>
     <div class="progress-wrap">
       <div class="progress-bar" id="prog-bar" style="width:10%"></div>
@@ -593,214 +747,482 @@ body {
 
 </div>
 
+<!-- ========== PDF モーダル ========== -->
+<div class="pdf-overlay" id="pdf-overlay" onclick="overlayClick(event)">
+  <div class="pdf-modal">
+    <div class="pdf-modal-title">📄 プリントテストを作る</div>
+
+    <div class="section-label">🎓 学年を選ぼう</div>
+    <div class="btn-group" id="pdf-grp-grade">
+      <button class="select-btn" onclick="pickPdf('grade',3,this)">3年生</button>
+      <button class="select-btn" onclick="pickPdf('grade',4,this)">4年生</button>
+    </div>
+
+    <div class="section-label">📅 学期を選ぼう</div>
+    <div class="btn-group" id="pdf-grp-semester">
+      <button class="select-btn" id="pdf-sem-btn-1" onclick="pickPdf('semester',1,this)">1学期</button>
+      <button class="select-btn" id="pdf-sem-btn-2" onclick="pickPdf('semester',2,this)">2学期</button>
+      <button class="select-btn" id="pdf-sem-btn-3" onclick="pickPdf('semester',3,this)">3学期</button>
+    </div>
+
+    <div class="section-label">📝 問題の種類を選ぼう</div>
+    <div class="btn-group" style="flex-wrap:wrap;" id="pdf-grp-type">
+      <button class="select-btn" onclick="pickPdf('qtype','random',this)" style="min-width:45%;">
+        🎲 ランダム<br><small style="font-weight:normal;font-size:0.78em">読み・書き・穴埋め</small>
+      </button>
+      <button class="select-btn" onclick="pickPdf('qtype','reading',this)" style="min-width:45%;">
+        📖 読みのみ<br><small style="font-weight:normal;font-size:0.78em">漢字→ひらがな</small>
+      </button>
+      <button class="select-btn" onclick="pickPdf('qtype','writing',this)" style="min-width:45%;">
+        ✏️ 書きのみ<br><small style="font-weight:normal;font-size:0.78em">ひらがな→漢字</small>
+      </button>
+      <button class="select-btn" onclick="pickPdf('qtype','fill',this)" style="min-width:45%;">
+        📝 穴埋めのみ<br><small style="font-weight:normal;font-size:0.78em">文中の（　）に記入</small>
+      </button>
+    </div>
+
+    <div class="section-label">🔢 問題数を選ぼう</div>
+    <div class="btn-group" id="pdf-grp-count">
+      <button class="select-btn" onclick="pickPdf('count',10,this)">10問</button>
+      <button class="select-btn" onclick="pickPdf('count',20,this)">20問</button>
+      <button class="select-btn" onclick="pickPdf('count',30,this)">30問</button>
+    </div>
+
+    <div style="font-size:0.82rem;color:#888;background:#f8f9ff;border-radius:10px;padding:10px 14px;margin-bottom:14px;line-height:1.7;">
+      📌 送りがなも含めて出題します<br>
+      📌 生成後、ブラウザの印刷機能でPDF保存できます
+    </div>
+
+    <button class="btn-pdf-gen" id="btn-pdf-gen" onclick="generatePdf()" disabled>
+      🖨️ テストを生成して印刷する
+    </button>
+    <button class="btn-modal-close" onclick="closePdfModal()">✕ とじる</button>
+  </div>
+</div>
+
 <script>
 // ================================================================
-//  漢字データ（各学期 20問）
+//  漢字データ（学期・読み・例文）
 // ================================================================
 const DATA = {
+  // ================================================================
+  //  3年生データ
+  // ================================================================
+  3: {
+    // ── 1学期（50字）──────────────────────────────────────────────
+    1: [
+      { word:'悪い',   reading:'わるい',         sentence:'悪いことをしたので先生にしかられた。' },       // 悪
+      { word:'安全',   reading:'あんぜん',       sentence:'道路を渡るときは安全を確かめる。' },           // 安
+      { word:'暗い',   reading:'くらい',         sentence:'夜になると部屋が暗い。' },                     // 暗
+      { word:'医者',   reading:'いしゃ',         sentence:'熱が出たので医者に診てもらった。' },           // 医
+      { word:'委員',   reading:'いいん',         sentence:'クラスの委員に選ばれた。' },                   // 委
+      { word:'意見',   reading:'いけん',         sentence:'みんなの前で意見を発表した。' },               // 意
+      { word:'育てる', reading:'そだてる',       sentence:'アサガオの種を育てることが好きだ。' },         // 育
+      { word:'店員',   reading:'てんいん',       sentence:'お店の店員さんに道を聞いた。' },               // 員
+      { word:'病院',   reading:'びょういん',     sentence:'風邪をひいて病院に行った。' },                 // 院
+      { word:'飲む',   reading:'のむ',           sentence:'のどが渇いたので水を飲む。' },                 // 飲
+      { word:'運動',   reading:'うんどう',       sentence:'体のために毎朝運動している。' },               // 運
+      { word:'泳ぐ',   reading:'およぐ',         sentence:'夏になるとプールで泳ぐのが楽しい。' },         // 泳
+      { word:'駅',     reading:'えき',           sentence:'電車に乗るために駅まで歩いた。' },             // 駅
+      { word:'中央',   reading:'ちゅうおう',     sentence:'公園の中央に大きな木がある。' },               // 央
+      { word:'横',     reading:'よこ',           sentence:'弟が私の横に座った。' },                       // 横
+      { word:'部屋',   reading:'へや',           sentence:'自分の部屋をきれいに片付けた。' },             // 屋
+      { word:'温度',   reading:'おんど',         sentence:'料理の温度を確かめてから食べた。' },           // 温
+      { word:'化学',   reading:'かがく',         sentence:'理科の時間に化学の実験をした。' },             // 化
+      { word:'荷物',   reading:'にもつ',         sentence:'旅行の荷物をまとめた。' },                     // 荷
+      { word:'世界',   reading:'せかい',         sentence:'世界にはいろいろな国がある。' },               // 界
+      { word:'開く',   reading:'ひらく',         sentence:'花が開くのをじっと待った。' },                 // 開
+      { word:'階段',   reading:'かいだん',       sentence:'校舎の階段を元気よく上った。' },               // 階
+      { word:'寒い',   reading:'さむい',         sentence:'冬になると外がとても寒い。' },                 // 寒
+      { word:'感謝',   reading:'かんしゃ',       sentence:'助けてくれた友達に感謝した。' },               // 感
+      { word:'漢字',   reading:'かんじ',         sentence:'毎日漢字の練習をしている。' },                 // 漢
+      { word:'図書館', reading:'としょかん',     sentence:'放課後に図書館で本を読んだ。' },               // 館
+      { word:'海岸',   reading:'かいがん',       sentence:'海岸で貝がらを拾った。' },                     // 岸
+      { word:'起きる', reading:'おきる',         sentence:'毎朝六時に起きることにしている。' },           // 起
+      { word:'学期',   reading:'がっき',         sentence:'学期の終わりに通知表をもらった。' },           // 期
+      { word:'客席',   reading:'きゃくせき',     sentence:'音楽会の客席はたくさんの人でいっぱいだった。' }, // 客
+      { word:'研究',   reading:'けんきゅう',     sentence:'科学者が新しいことを研究している。' },         // 究
+      { word:'急ぐ',   reading:'いそぐ',         sentence:'遅刻しそうなので学校に急ぐ。' },               // 急
+      { word:'学級',   reading:'がっきゅう',     sentence:'学級みんなで協力して掃除した。' },             // 級
+      { word:'宮殿',   reading:'きゅうでん',     sentence:'外国の宮殿の写真を見た。' },                   // 宮
+      { word:'去年',   reading:'きょねん',       sentence:'去年の夏は家族で海に行った。' },               // 去
+      { word:'橋',     reading:'はし',           sentence:'川の上に橋がかかっている。' },                 // 橋
+      { word:'作業',   reading:'さぎょう',       sentence:'みんなで力を合わせて作業した。' },             // 業
+      { word:'曲',     reading:'きょく',         sentence:'好きな曲をピアノで弾いた。' },                 // 曲
+      { word:'放送局', reading:'ほうそうきょく', sentence:'放送局からニュースが流れた。' },               // 局
+      { word:'銀行',   reading:'ぎんこう',       sentence:'お母さんと銀行へ行った。' },                   // 銀
+      { word:'地区',   reading:'ちく',           sentence:'地区の運動会に参加した。' },                   // 区
+      { word:'苦手',   reading:'にがて',         sentence:'算数が苦手なので毎日練習した。' },             // 苦
+      { word:'道具',   reading:'どうぐ',         sentence:'工作に使う道具を準備した。' },                 // 具
+      { word:'君',     reading:'きみ',           sentence:'君の考えをぜひ聞かせてほしい。' },             // 君
+      { word:'係',     reading:'かかり',         sentence:'日直の係になって黒板を消した。' },             // 係
+      { word:'軽い',   reading:'かるい',         sentence:'このランドセルはとても軽い。' },               // 軽
+      { word:'血液',   reading:'けつえき',       sentence:'体の中を血液が流れている。' },                 // 血
+      { word:'決める', reading:'きめる',         sentence:'遠足の目的地を決めることになった。' },         // 決
+      { word:'研修',   reading:'けんしゅう',     sentence:'先生たちが研修を受けている。' },               // 研
+      { word:'県庁',   reading:'けんちょう',     sentence:'社会科の授業で県庁を見学した。' },             // 県
+    ],
+    // ── 2学期（59字）──────────────────────────────────────────────
+    2: [
+      { word:'車庫',     reading:'しゃこ',         sentence:'お父さんが車庫に車をとめた。' },           // 庫
+      { word:'湖',       reading:'みずうみ',        sentence:'湖のほとりでボートに乗った。' },           // 湖
+      { word:'向かう',   reading:'むかう',          sentence:'友達の家に向かう途中で雨が降った。' },     // 向
+      { word:'幸せ',     reading:'しあわせ',        sentence:'家族と一緒にいると幸せだ。' },             // 幸
+      { word:'港',       reading:'みなと',          sentence:'大きな船が港に入ってきた。' },             // 港
+      { word:'番号',     reading:'ばんごう',        sentence:'くじ引きで番号を呼ばれた。' },             // 号
+      { word:'根',       reading:'ね',              sentence:'木の根は土の中に深く伸びている。' },       // 根
+      { word:'祭り',     reading:'まつり',          sentence:'夏に町の祭りを楽しんだ。' },               // 祭
+      { word:'皿',       reading:'さら',            sentence:'皿の上においしいケーキが乗っていた。' },   // 皿
+      { word:'仕事',     reading:'しごと',          sentence:'お父さんは仕事を終えて帰ってきた。' },     // 仕
+      { word:'死ぬ',     reading:'しぬ',            sentence:'花は水をやらないと死ぬことがある。' },     // 死
+      { word:'使う',     reading:'つかう',          sentence:'計算するときに定規を使う。' },             // 使
+      { word:'始める',   reading:'はじめる',        sentence:'春から新しい習い事を始める。' },           // 始
+      { word:'指',       reading:'ゆび',            sentence:'転んで指にけがをした。' },                 // 指
+      { word:'歯',       reading:'は',              sentence:'毎晩歯をみがいてから寝る。' },             // 歯
+      { word:'詩',       reading:'し',              sentence:'国語の時間に詩を書いた。' },               // 詩
+      { word:'次',       reading:'つぎ',            sentence:'次の問題に進んでください。' },             // 次
+      { word:'大事',     reading:'だいじ',          sentence:'友達のことを大事にする。' },               // 事
+      { word:'持つ',     reading:'もつ',            sentence:'重い荷物を両手で持つ。' },                 // 持
+      { word:'入学式',   reading:'にゅうがくしき',  sentence:'春に入学式があって緊張した。' },           // 式
+      { word:'実験',     reading:'じっけん',        sentence:'理科の授業で実験をした。' },               // 実
+      { word:'写真',     reading:'しゃしん',        sentence:'遠足で写真をたくさん撮った。' },           // 写
+      { word:'学者',     reading:'がくしゃ',        sentence:'有名な学者が学校に来て話をした。' },       // 者
+      { word:'主役',     reading:'しゅやく',        sentence:'学芸会で主役を演じた。' },                 // 主
+      { word:'守る',     reading:'まもる',          sentence:'交通ルールを守ることが大切だ。' },         // 守
+      { word:'取る',     reading:'とる',            sentence:'本だなから辞書を取った。' },               // 取
+      { word:'日本酒',   reading:'にほんしゅ',      sentence:'日本酒はお米から作るお酒だ。' },           // 酒
+      { word:'受ける',   reading:'うける',          sentence:'大切なバトンを受けるために走った。' },     // 受
+      { word:'九州',     reading:'きゅうしゅう',    sentence:'九州には活火山がある。' },                 // 州
+      { word:'拾う',     reading:'ひろう',          sentence:'公園でゴミを拾うボランティアに参加した。' }, // 拾
+      { word:'終わる',   reading:'おわる',          sentence:'授業が終わると外で遊んだ。' },             // 終
+      { word:'練習',     reading:'れんしゅう',      sentence:'発表会に向けて毎日練習した。' },           // 習
+      { word:'集まる',   reading:'あつまる',        sentence:'朝、校庭に全員が集まった。' },             // 集
+      { word:'住む',     reading:'すむ',            sentence:'私は山の近くに住む。' },                   // 住
+      { word:'重い',     reading:'おもい',          sentence:'この石はとても重い。' },                   // 重
+      { word:'宿題',     reading:'しゅくだい',      sentence:'宿題を早く終わらせてから遊ぶ。' },         // 宿
+      { word:'場所',     reading:'ばしょ',          sentence:'遠足で食べる場所を決めた。' },             // 所
+      { word:'暑い',     reading:'あつい',          sentence:'夏の昼間はとても暑い。' },                 // 暑
+      { word:'助ける',   reading:'たすける',        sentence:'困っている友達を助けることが大切だ。' },   // 助
+      { word:'昭和',     reading:'しょうわ',        sentence:'昭和の時代に作られた建物を見た。' },       // 昭
+      { word:'消える',   reading:'きえる',          sentence:'ろうそくの火が風で消えた。' },             // 消
+      { word:'商店',     reading:'しょうてん',      sentence:'近所の商店でパンを買った。' },             // 商
+      { word:'文章',     reading:'ぶんしょう',      sentence:'国語の授業で長い文章を読んだ。' },         // 章
+      { word:'勝つ',     reading:'かつ',            sentence:'運動会のリレーで勝つために練習した。' },   // 勝
+      { word:'乗り物',   reading:'のりもの',        sentence:'乗り物の中では静かにする。' },             // 乗
+      { word:'植物',     reading:'しょくぶつ',      sentence:'理科で植物の育ち方を調べた。' },           // 植
+      { word:'申し込み', reading:'もうしこみ',      sentence:'クラブ活動への申し込みをした。' },         // 申
+      { word:'身体',     reading:'からだ',          sentence:'毎日運動して身体をきたえる。' },           // 身
+      { word:'神社',     reading:'じんじゃ',        sentence:'お正月に神社へお参りに行った。' },         // 神
+      { word:'真ん中',   reading:'まんなか',        sentence:'教室の真ん中の席に座った。' },             // 真
+      { word:'深い',     reading:'ふかい',          sentence:'この川はとても深い。' },                   // 深
+      { word:'進む',     reading:'すすむ',          sentence:'目標に向かって前に進む。' },               // 進
+      { word:'世界',     reading:'せかい',          sentence:'世界の国々について調べた。' },             // 世
+      { word:'整列',     reading:'せいれつ',        sentence:'体育の時間に整列して並んだ。' },           // 整
+      { word:'昔',       reading:'むかし',          sentence:'昔の人々はどんな生活をしていたのだろう。' }, // 昔
+      { word:'全部',     reading:'ぜんぶ',          sentence:'給食を全部食べた。' },                     // 全
+      { word:'感想',     reading:'かんそう',        sentence:'読んだ本の感想を作文に書いた。' },         // 想
+      { word:'相手',     reading:'あいて',          sentence:'相手の気持ちを考えて話す。' },             // 相
+      { word:'息',       reading:'いき',            sentence:'走って息が切れた。' },                     // 息
+    ],
+    // ── 3学期（87字）──────────────────────────────────────────────
+    3: [
+      { word:'速い',     reading:'はやい',     sentence:'チーターは速い動物だ。' },                           // 速
+      { word:'家族',     reading:'かぞく',     sentence:'家族で海へ遊びに行った。' },                         // 族
+      { word:'他',       reading:'ほか',       sentence:'他のクラスの友達と話した。' },                       // 他
+      { word:'対話',     reading:'たいわ',     sentence:'先生と対話して悩みを解決した。' },                   // 対
+      { word:'待つ',     reading:'まつ',       sentence:'バス停でバスを待つ。' },                             // 待
+      { word:'時代',     reading:'じだい',     sentence:'江戸時代のことを本で読んだ。' },                     // 代
+      { word:'第一',     reading:'だいいち',   sentence:'安全が第一だと先生に言われた。' },                   // 第
+      { word:'題名',     reading:'だいめい',   sentence:'作文の題名をじっくり考えた。' },                     // 題
+      { word:'石炭',     reading:'せきたん',   sentence:'昔は石炭を燃料にして火をおこした。' },               // 炭
+      { word:'短い',     reading:'みじかい',   sentence:'短い鉛筆は使いにくい。' },                           // 短
+      { word:'相談',     reading:'そうだん',   sentence:'困ったことを親に相談した。' },                       // 談
+      { word:'着る',     reading:'きる',       sentence:'寒くなったのでセーターを着る。' },                   // 着
+      { word:'注意',     reading:'ちゅうい',   sentence:'道路を歩くときは注意が必要だ。' },                   // 注
+      { word:'柱',       reading:'はしら',     sentence:'家の柱は太くて丈夫だ。' },                           // 柱
+      { word:'丁目',     reading:'ちょうめ',   sentence:'学校は三丁目にある。' },                             // 丁
+      { word:'手帳',     reading:'てちょう',   sentence:'予定を手帳にメモした。' },                           // 帳
+      { word:'調べる',   reading:'しらべる',   sentence:'図書館で川の魚について調べる。' },                   // 調
+      { word:'追う',     reading:'おう',       sentence:'犬がボールを追う。' },                               // 追
+      { word:'決定',     reading:'けってい',   sentence:'遠足の日にちが決定した。' },                         // 定
+      { word:'庭',       reading:'にわ',       sentence:'庭に花を植えてきれいにした。' },                     // 庭
+      { word:'笛',       reading:'ふえ',       sentence:'音楽の時間に笛を吹いた。' },                         // 笛
+      { word:'鉄道',     reading:'てつどう',   sentence:'鉄道に乗って旅行するのが楽しみだ。' },               // 鉄
+      { word:'転校',     reading:'てんこう',   sentence:'友達が転校してさびしくなった。' },                   // 転
+      { word:'都市',     reading:'とし',       sentence:'大きな都市にはビルがたくさんある。' },               // 都
+      { word:'今度',     reading:'こんど',     sentence:'今度の試合では全力でがんばる。' },                   // 度
+      { word:'投げる',   reading:'なげる',     sentence:'ボールを遠くへ投げる練習をした。' },                 // 投
+      { word:'豆',       reading:'まめ',       sentence:'節分の日に豆をまいた。' },                           // 豆
+      { word:'島',       reading:'しま',       sentence:'船に乗って遠くの島へ行った。' },                     // 島
+      { word:'お湯',     reading:'おゆ',       sentence:'カップラーメンにお湯を入れた。' },                   // 湯
+      { word:'登山',     reading:'とざん',     sentence:'夏休みに父と登山をして頂上を目指した。' },           // 登
+      { word:'平等',     reading:'びょうどう', sentence:'みんなが平等にあつかわれることが大切だ。' },         // 等
+      { word:'動く',     reading:'うごく',     sentence:'ロボットが自分で動く仕組みを学んだ。' },             // 動
+      { word:'童話',     reading:'どうわ',     sentence:'図書館で童話の本を読んだ。' },                       // 童
+      { word:'農業',     reading:'のうぎょう', sentence:'農業で野菜を育てる仕事をしている。' },               // 農
+      { word:'波',       reading:'なみ',       sentence:'海の波が岩にぶつかって白くなった。' },               // 波
+      { word:'心配',     reading:'しんぱい',   sentence:'友達のことが心配で電話をした。' },                   // 配
+      { word:'二倍',     reading:'にばい',     sentence:'練習を二倍にしてがんばった。' },                     // 倍
+      { word:'箱',       reading:'はこ',       sentence:'大きな箱に荷物をつめた。' },                         // 箱
+      { word:'畑',       reading:'はたけ',     sentence:'畑でトマトとキュウリを育てた。' },                   // 畑
+      { word:'発表',     reading:'はっぴょう', sentence:'調べたことをクラスで発表した。' },                   // 発
+      { word:'反対',     reading:'はんたい',   sentence:'兄と意見が反対だったので話し合った。' },             // 反
+      { word:'坂道',     reading:'さかみち',   sentence:'長い坂道を自転車で上った。' },                       // 坂
+      { word:'黒板',     reading:'こくばん',   sentence:'先生が黒板に大きく答えを書いた。' },                 // 板
+      { word:'悲しい',   reading:'かなしい',   sentence:'大好きな本のしゅじんこうが死んで悲しい。' },         // 悲
+      { word:'皮',       reading:'かわ',       sentence:'みかんの皮をむいて食べた。' },                       // 皮
+      { word:'美しい',   reading:'うつくしい', sentence:'夕日に照らされた海が美しい。' },                     // 美
+      { word:'鼻',       reading:'はな',       sentence:'風邪をひいて鼻が出た。' },                           // 鼻
+      { word:'鉛筆',     reading:'えんぴつ',   sentence:'鉛筆で丁寧にひらがなを書いた。' },                   // 筆
+      { word:'氷',       reading:'こおり',     sentence:'コップに氷を入れてジュースを飲んだ。' },             // 氷
+      { word:'表紙',     reading:'ひょうし',   sentence:'ノートの表紙に名前を書いた。' },                     // 表
+      { word:'一秒',     reading:'いちびょう', sentence:'一秒も無駄にしないで練習した。' },                   // 秒
+      { word:'病気',     reading:'びょうき',   sentence:'病気になって三日間学校を休んだ。' },                 // 病
+      { word:'品物',     reading:'しなもの',   sentence:'お店でめずらしい品物を見つけた。' },                 // 品
+      { word:'負ける',   reading:'まける',     sentence:'練習しないと試合に負ける。' },                       // 負
+      { word:'部活',     reading:'ぶかつ',     sentence:'部活でサッカーを毎日練習している。' },               // 部
+      { word:'制服',     reading:'せいふく',   sentence:'中学校では制服を着て通学する。' },                   // 服
+      { word:'幸福',     reading:'こうふく',   sentence:'家族みんなが幸福に暮らせると良い。' },               // 福
+      { word:'食べ物',   reading:'たべもの',   sentence:'好きな食べ物はカレーライスだ。' },                   // 物
+      { word:'平和',     reading:'へいわ',     sentence:'世界が平和になることを願っている。' },               // 平
+      { word:'返事',     reading:'へんじ',     sentence:'名前を呼ばれたらすぐに返事をした。' },               // 返
+      { word:'勉強',     reading:'べんきょう', sentence:'毎日一時間勉強する習慣をつけた。' },                 // 勉
+      { word:'放送',     reading:'ほうそう',   sentence:'給食の時間に放送で音楽が流れた。' },                 // 放
+      { word:'味',       reading:'あじ',       sentence:'このスープは味がとてもよい。' },                     // 味
+      { word:'命',       reading:'いのち',     sentence:'命を大切にすることが一番大事だ。' },                 // 命
+      { word:'面白い',   reading:'おもしろい', sentence:'この本はとても面白い話が書いてある。' },             // 面
+      { word:'問題',     reading:'もんだい',   sentence:'テストの問題をよく読んで解いた。' },                 // 問
+      { word:'役割',     reading:'やくわり',   sentence:'班でそれぞれ役割を決めて動いた。' },                 // 役
+      { word:'薬',       reading:'くすり',     sentence:'熱が出たので薬を飲んだ。' },                         // 薬
+      { word:'自由',     reading:'じゆう',     sentence:'自由な時間に好きな絵をかいた。' },                   // 由
+      { word:'石油',     reading:'せきゆ',     sentence:'石油を使って電気を作る工場がある。' },               // 油
+      { word:'有名',     reading:'ゆうめい',   sentence:'有名な選手がこの町に来た。' },                       // 有
+      { word:'遊ぶ',     reading:'あそぶ',     sentence:'放課後に公園で友達と遊ぶ。' },                       // 遊
+      { word:'予定',     reading:'よてい',     sentence:'週末に家族で出かける予定がある。' },                 // 予
+      { word:'羊',       reading:'ひつじ',     sentence:'牧場で白くてかわいい羊を見た。' },                   // 羊
+      { word:'洋服',     reading:'ようふく',   sentence:'お気に入りの洋服を着ておでかけした。' },             // 洋
+      { word:'言葉',     reading:'ことば',     sentence:'友達から優しい言葉をかけてもらった。' },             // 葉
+      { word:'太陽',     reading:'たいよう',   sentence:'太陽の光を受けてひまわりが大きく育った。' },         // 陽
+      { word:'落ちる',   reading:'おちる',     sentence:'熟したりんごが木から落ちる。' },                     // 落
+      { word:'流れる',   reading:'ながれる',   sentence:'山から清らかな水が流れる。' },                       // 流
+      { word:'旅行',     reading:'りょこう',   sentence:'家族で旅行に行って温泉に入った。' },                 // 旅
+      { word:'両手',     reading:'りょうて',   sentence:'両手でしっかりとお盆を持った。' },                   // 両
+      { word:'緑',       reading:'みどり',     sentence:'春になると山の緑がきれいだ。' },                     // 緑
+      { word:'お礼',     reading:'おれい',     sentence:'助けてもらったのでお礼の手紙を書いた。' },           // 礼
+      { word:'行列',     reading:'ぎょうれつ', sentence:'人気のお店に長い行列ができていた。' },               // 列
+      { word:'練習',     reading:'れんしゅう', sentence:'ピアノの練習を毎日かかさずする。' },                 // 練
+      { word:'道路',     reading:'どうろ',     sentence:'道路を渡るときは左右を確認する。' },                 // 路
+      { word:'和食',     reading:'わしょく',   sentence:'和食の中でおにぎりが一番好きだ。' },                 // 和
+    ]
+  },
+  // ================================================================
+  //  4年生データ
+  // ================================================================
+  4: {
   // ── 1学期（64字）──────────────────────────────────────────────
   1: [
-    { word:'愛情',   reading:'あいじょう' },  // 愛
-    { word:'案内',   reading:'あんない' },    // 案
-    { word:'以上',   reading:'いじょう' },    // 以
-    { word:'衣服',   reading:'いふく' },      // 衣
-    { word:'位置',   reading:'いち' },        // 位
-    { word:'囲む',   reading:'かこむ' },      // 囲
-    { word:'胃袋',   reading:'いぶくろ' },    // 胃
-    { word:'印刷',   reading:'いんさつ' },    // 印
-    { word:'英語',   reading:'えいご' },      // 英
-    { word:'栄養',   reading:'えいよう' },    // 栄
-    { word:'塩分',   reading:'えんぶん' },    // 塩
-    { word:'億円',   reading:'おくえん' },    // 億
-    { word:'加工',   reading:'かこう' },      // 加
-    { word:'果物',   reading:'くだもの' },    // 果
-    { word:'貨物',   reading:'かもつ' },      // 貨
-    { word:'課題',   reading:'かだい' },      // 課
-    { word:'新芽',   reading:'しんめ' },      // 芽
-    { word:'改良',   reading:'かいりょう' },  // 改
-    { word:'機械',   reading:'きかい' },      // 械
-    { word:'各地',   reading:'かくち' },      // 各
-    { word:'覚える', reading:'おぼえる' },    // 覚
-    { word:'完成',   reading:'かんせい' },    // 完
-    { word:'官庁',   reading:'かんちょう' },  // 官
-    { word:'管理',   reading:'かんり' },      // 管
-    { word:'観察',   reading:'かんさつ' },    // 観
-    { word:'関係',   reading:'かんけい' },    // 関
-    { word:'希望',   reading:'きぼう' },      // 希
-    { word:'季節',   reading:'きせつ' },      // 季
-    { word:'旗',     reading:'はた' },        // 旗
-    { word:'器具',   reading:'きぐ' },        // 器
-    { word:'飛行機', reading:'ひこうき' },    // 機
-    { word:'会議',   reading:'かいぎ' },      // 議
-    { word:'要求',   reading:'ようきゅう' },  // 求
-    { word:'泣く',   reading:'なく' },        // 泣
-    { word:'給食',   reading:'きゅうしょく' },// 給
-    { word:'挙手',   reading:'きょしゅ' },    // 挙
-    { word:'漁業',   reading:'ぎょぎょう' },  // 漁
-    { word:'共通',   reading:'きょうつう' },  // 共
-    { word:'協力',   reading:'きょうりょく' },// 協
-    { word:'鏡',     reading:'かがみ' },      // 鏡
-    { word:'競争',   reading:'きょうそう' },  // 競
-    { word:'北極',   reading:'ほっきょく' },  // 極
-    { word:'熊',     reading:'くま' },        // 熊
-    { word:'訓練',   reading:'くんれん' },    // 訓
-    { word:'軍人',   reading:'ぐんじん' },    // 軍
-    { word:'郡部',   reading:'ぐんぶ' },      // 郡
-    { word:'直径',   reading:'ちょっけい' },  // 径
-    { word:'大型',   reading:'おおがた' },    // 型
-    { word:'景色',   reading:'けしき' },      // 景
-    { word:'芸術',   reading:'げいじゅつ' },  // 芸
-    { word:'結果',   reading:'けっか' },      // 結
-    { word:'健全',   reading:'けんぜん' },    // 健
-    { word:'経験',   reading:'けいけん' },    // 験
-    { word:'固い',   reading:'かたい' },      // 固
-    { word:'成功',   reading:'せいこう' },    // 功
-    { word:'好物',   reading:'こうぶつ' },    // 好
-    { word:'天候',   reading:'てんこう' },    // 候
-    { word:'航海',   reading:'こうかい' },    // 航
-    { word:'健康',   reading:'けんこう' },    // 康
-    { word:'報告',   reading:'ほうこく' },    // 告
-    { word:'時差',   reading:'じさ' },        // 差
-    { word:'野菜',   reading:'やさい' },      // 菜
-    { word:'最高',   reading:'さいこう' },    // 最
-    { word:'材料',   reading:'ざいりょう' },  // 材
+    { word:'愛情',   reading:'あいじょう',   sentence:'両親の愛情を受けて育った。' },
+    { word:'案内',   reading:'あんない',     sentence:'受付の人が案内してくれた。' },
+    { word:'以上',   reading:'いじょう',     sentence:'十点以上取れれば合格だ。' },
+    { word:'衣服',   reading:'いふく',       sentence:'季節に合った衣服を着る。' },
+    { word:'位置',   reading:'いち',         sentence:'地図で目的地の位置を確認した。' },
+    { word:'囲む',   reading:'かこむ',       sentence:'校庭を囲む木がきれいだ。' },
+    { word:'胃袋',   reading:'いぶくろ',     sentence:'おいしい料理を食べて胃袋が満足した。' },
+    { word:'印刷',   reading:'いんさつ',     sentence:'プリンターで書類を印刷した。' },
+    { word:'英語',   reading:'えいご',       sentence:'英語の授業で発表した。' },
+    { word:'栄養',   reading:'えいよう',     sentence:'野菜には栄養がたくさんある。' },
+    { word:'塩分',   reading:'えんぶん',     sentence:'塩分の取りすぎに注意する。' },
+    { word:'億円',   reading:'おくえん',     sentence:'その建物は百億円かかった。' },
+    { word:'加工',   reading:'かこう',       sentence:'食品を加工して保存する。' },
+    { word:'果物',   reading:'くだもの',     sentence:'冷蔵庫に果物がたくさんある。' },
+    { word:'貨物',   reading:'かもつ',       sentence:'大きな貨物を船で運ぶ。' },
+    { word:'課題',   reading:'かだい',       sentence:'夏休みの課題を終わらせた。' },
+    { word:'新芽',   reading:'しんめ',       sentence:'春になって植物に新芽が出た。' },
+    { word:'改良',   reading:'かいりょう',   sentence:'機械を改良してより便利にした。' },
+    { word:'機械',   reading:'きかい',       sentence:'工場で機械が動いている。' },
+    { word:'各地',   reading:'かくち',       sentence:'台風が各地に被害をもたらした。' },
+    { word:'覚える', reading:'おぼえる',     sentence:'漢字を覚えることが大切だ。' },
+    { word:'完成',   reading:'かんせい',     sentence:'作品がついに完成した。' },
+    { word:'官庁',   reading:'かんちょう',   sentence:'官庁の近くに学校がある。' },
+    { word:'管理',   reading:'かんり',       sentence:'建物の管理を任された。' },
+    { word:'観察',   reading:'かんさつ',     sentence:'理科の時間に虫を観察した。' },
+    { word:'関係',   reading:'かんけい',     sentence:'二つの出来事には関係がある。' },
+    { word:'希望',   reading:'きぼう',       sentence:'将来の希望を作文に書いた。' },
+    { word:'季節',   reading:'きせつ',       sentence:'四つの季節が日本にはある。' },
+    { word:'旗',     reading:'はた',         sentence:'運動会で旗を高く掲げた。' },
+    { word:'器具',   reading:'きぐ',         sentence:'理科の器具を大切に使う。' },
+    { word:'飛行機', reading:'ひこうき',     sentence:'飛行機に乗って旅行した。' },
+    { word:'会議',   reading:'かいぎ',       sentence:'学校で会議が開かれた。' },
+    { word:'要求',   reading:'ようきゅう',   sentence:'強く要求しても断られた。' },
+    { word:'泣く',   reading:'なく',         sentence:'転んで泣く子を慰めた。' },
+    { word:'給食',   reading:'きゅうしょく', sentence:'今日の給食はカレーだった。' },
+    { word:'挙手',   reading:'きょしゅ',     sentence:'挙手して先生に質問した。' },
+    { word:'漁業',   reading:'ぎょぎょう',   sentence:'この地域では漁業が盛んだ。' },
+    { word:'共通',   reading:'きょうつう',   sentence:'二人には共通の趣味がある。' },
+    { word:'協力',   reading:'きょうりょく', sentence:'みんなで協力して問題を解いた。' },
+    { word:'鏡',     reading:'かがみ',       sentence:'鏡を見て身だしなみを整えた。' },
+    { word:'競争',   reading:'きょうそう',   sentence:'かけっこで友達と競争した。' },
+    { word:'北極',   reading:'ほっきょく',   sentence:'北極は一年中寒い。' },
+    { word:'熊',     reading:'くま',         sentence:'森の中で熊に出会った。' },
+    { word:'訓練',   reading:'くんれん',     sentence:'消防士が毎日訓練をしている。' },
+    { word:'軍人',   reading:'ぐんじん',     sentence:'その人は昔、軍人だった。' },
+    { word:'郡部',   reading:'ぐんぶ',       sentence:'郡部では自然が豊かだ。' },
+    { word:'直径',   reading:'ちょっけい',   sentence:'この円の直径を調べた。' },
+    { word:'大型',   reading:'おおがた',     sentence:'大型のトラックが通った。' },
+    { word:'景色',   reading:'けしき',       sentence:'山の上からの景色は絶景だった。' },
+    { word:'芸術',   reading:'げいじゅつ',   sentence:'美術館で芸術作品を鑑賞した。' },
+    { word:'結果',   reading:'けっか',       sentence:'テストの結果を発表した。' },
+    { word:'健全',   reading:'けんぜん',     sentence:'健全な体を保つために運動する。' },
+    { word:'経験',   reading:'けいけん',     sentence:'失敗も大切な経験だ。' },
+    { word:'固い',   reading:'かたい',       sentence:'この岩は固い。' },
+    { word:'成功',   reading:'せいこう',     sentence:'長い努力の末に成功した。' },
+    { word:'好物',   reading:'こうぶつ',     sentence:'私の好物はラーメンだ。' },
+    { word:'天候',   reading:'てんこう',     sentence:'登山は天候をよく確認してから行く。' },
+    { word:'航海',   reading:'こうかい',     sentence:'昔の人は船で長い航海をした。' },
+    { word:'健康',   reading:'けんこう',     sentence:'毎日運動して健康を保つ。' },
+    { word:'報告',   reading:'ほうこく',     sentence:'先生に調べた結果を報告した。' },
+    { word:'時差',   reading:'じさ',         sentence:'時差があるので電話の時間に注意する。' },
+    { word:'野菜',   reading:'やさい',       sentence:'野菜をしっかり食べる。' },
+    { word:'最高',   reading:'さいこう',     sentence:'今日は最高の天気だ。' },
+    { word:'材料',   reading:'ざいりょう',   sentence:'料理に必要な材料を買った。' },
   ],
   // ── 2学期（64字）──────────────────────────────────────────────
   2: [
-    { word:'昨日',   reading:'きのう' },      // 昨
-    { word:'刷新',   reading:'さっしん' },    // 刷
-    { word:'察する', reading:'さっする' },    // 察
-    { word:'参加',   reading:'さんか' },      // 参
-    { word:'産業',   reading:'さんぎょう' },  // 産
-    { word:'散歩',   reading:'さんぽ' },      // 散
-    { word:'残念',   reading:'ざんねん' },    // 残
-    { word:'武士',   reading:'ぶし' },        // 士
-    { word:'氏名',   reading:'しめい' },      // 氏
-    { word:'歴史',   reading:'れきし' },      // 史
-    { word:'司会',   reading:'しかい' },      // 司
-    { word:'試合',   reading:'しあい' },      // 試
-    { word:'児童',   reading:'じどう' },      // 児
-    { word:'政治',   reading:'せいじ' },      // 治
-    { word:'辞書',   reading:'じしょ' },      // 辞
-    { word:'失敗',   reading:'しっぱい' },    // 失
-    { word:'借りる', reading:'かりる' },      // 借
-    { word:'種類',   reading:'しゅるい' },    // 種
-    { word:'周り',   reading:'まわり' },      // 周
-    { word:'祝日',   reading:'しゅくじつ' },  // 祝
-    { word:'順番',   reading:'じゅんばん' },  // 順
-    { word:'初めて', reading:'はじめて' },    // 初
-    { word:'松',     reading:'まつ' },        // 松
-    { word:'笑顔',   reading:'えがお' },      // 笑
-    { word:'合唱',   reading:'がっしょう' },  // 唱
-    { word:'焼く',   reading:'やく' },        // 焼
-    { word:'象',     reading:'ぞう' },        // 象
-    { word:'照らす', reading:'てらす' },      // 照
-    { word:'賞状',   reading:'しょうじょう' },// 賞
-    { word:'大臣',   reading:'だいじん' },    // 臣
-    { word:'自信',   reading:'じしん' },      // 信
-    { word:'成長',   reading:'せいちょう' },  // 成
-    { word:'反省',   reading:'はんせい' },    // 省
-    { word:'清潔',   reading:'せいけつ' },    // 清
-    { word:'静か',   reading:'しずか' },      // 静
-    { word:'座席',   reading:'ざせき' },      // 席
-    { word:'面積',   reading:'めんせき' },    // 積
-    { word:'折り紙', reading:'おりがみ' },    // 折
-    { word:'節約',   reading:'せつやく' },    // 節
-    { word:'説明',   reading:'せつめい' },    // 説
-    { word:'浅い',   reading:'あさい' },      // 浅
-    { word:'戦争',   reading:'せんそう' },    // 戦
-    { word:'選手',   reading:'せんしゅ' },    // 選
-    { word:'自然',   reading:'しぜん' },      // 然
-    { word:'争う',   reading:'あらそう' },    // 争
-    { word:'倉庫',   reading:'そうこ' },      // 倉
-    { word:'巣',     reading:'す' },          // 巣
-    { word:'束',     reading:'たば' },        // 束
-    { word:'右側',   reading:'みぎがわ' },    // 側
-    { word:'続く',   reading:'つづく' },      // 続
-    { word:'卒業',   reading:'そつぎょう' },  // 卒
-    { word:'孫',     reading:'まご' },        // 孫
-    { word:'地帯',   reading:'ちたい' },      // 帯
-    { word:'部隊',   reading:'ぶたい' },      // 隊
-    { word:'友達',   reading:'ともだち' },    // 達
-    { word:'単語',   reading:'たんご' },      // 単
-    { word:'装置',   reading:'そうち' },      // 置
-    { word:'仲間',   reading:'なかま' },      // 仲
-    { word:'貯金',   reading:'ちょきん' },    // 貯
-    { word:'兆円',   reading:'ちょうえん' },  // 兆
-    { word:'大腸',   reading:'だいちょう' },  // 腸
-    { word:'低い',   reading:'ひくい' },      // 低
-    { word:'底',     reading:'そこ' },        // 底
-    { word:'目的',   reading:'もくてき' },    // 的
+    { word:'昨日',   reading:'きのう',       sentence:'昨日は図書館で本を読んだ。' },
+    { word:'刷新',   reading:'さっしん',     sentence:'会社の方針を刷新した。' },
+    { word:'察する', reading:'さっする',     sentence:'相手の気持ちを察することが大切だ。' },
+    { word:'参加',   reading:'さんか',       sentence:'運動会に参加した。' },
+    { word:'産業',   reading:'さんぎょう',   sentence:'農業はこの地域の主な産業だ。' },
+    { word:'散歩',   reading:'さんぽ',       sentence:'朝に公園を散歩した。' },
+    { word:'残念',   reading:'ざんねん',     sentence:'試合に負けて残念だった。' },
+    { word:'武士',   reading:'ぶし',         sentence:'武士は刀を持っていた。' },
+    { word:'氏名',   reading:'しめい',       sentence:'用紙に氏名を書いた。' },
+    { word:'歴史',   reading:'れきし',       sentence:'日本の歴史を授業で学んだ。' },
+    { word:'司会',   reading:'しかい',       sentence:'学芸会で司会をした。' },
+    { word:'試合',   reading:'しあい',       sentence:'サッカーの試合で活躍した。' },
+    { word:'児童',   reading:'じどう',       sentence:'この学校の児童数は三百人だ。' },
+    { word:'政治',   reading:'せいじ',       sentence:'日本の政治について学んだ。' },
+    { word:'辞書',   reading:'じしょ',       sentence:'辞書で意味を調べた。' },
+    { word:'失敗',   reading:'しっぱい',     sentence:'失敗しても諦めなかった。' },
+    { word:'借りる', reading:'かりる',       sentence:'図書館で本を借りることができる。' },
+    { word:'種類',   reading:'しゅるい',     sentence:'果物の種類を調べた。' },
+    { word:'周り',   reading:'まわり',       sentence:'学校の周りには木が多い。' },
+    { word:'祝日',   reading:'しゅくじつ',   sentence:'その日は祝日で学校が休みだった。' },
+    { word:'順番',   reading:'じゅんばん',   sentence:'順番を守って並んだ。' },
+    { word:'初めて', reading:'はじめて',     sentence:'今日初めて自転車に乗れた。' },
+    { word:'松',     reading:'まつ',         sentence:'松の木が庭に植えてある。' },
+    { word:'笑顔',   reading:'えがお',       sentence:'笑顔で友達に話しかけた。' },
+    { word:'合唱',   reading:'がっしょう',   sentence:'音楽会で合唱をした。' },
+    { word:'焼く',   reading:'やく',         sentence:'パンを焼くのが好きだ。' },
+    { word:'象',     reading:'ぞう',         sentence:'動物園で象を見た。' },
+    { word:'照らす', reading:'てらす',       sentence:'太陽が大地を照らす。' },
+    { word:'賞状',   reading:'しょうじょう', sentence:'書道大会で賞状をもらった。' },
+    { word:'大臣',   reading:'だいじん',     sentence:'外務大臣が会見を開いた。' },
+    { word:'自信',   reading:'じしん',       sentence:'自信を持って発表した。' },
+    { word:'成長',   reading:'せいちょう',   sentence:'子供の成長を記録した。' },
+    { word:'反省',   reading:'はんせい',     sentence:'失敗を反省して次に活かす。' },
+    { word:'清潔',   reading:'せいけつ',     sentence:'清潔な部屋で勉強する。' },
+    { word:'静か',   reading:'しずか',       sentence:'静かな図書館で本を読む。' },
+    { word:'座席',   reading:'ざせき',       sentence:'映画館の座席に座った。' },
+    { word:'面積',   reading:'めんせき',     sentence:'この土地の面積を計算した。' },
+    { word:'折り紙', reading:'おりがみ',     sentence:'折り紙で鶴を折った。' },
+    { word:'節約',   reading:'せつやく',     sentence:'電気を節約するために電灯を消した。' },
+    { word:'説明',   reading:'せつめい',     sentence:'先生が問題をわかりやすく説明した。' },
+    { word:'浅い',   reading:'あさい',       sentence:'この川は浅い。' },
+    { word:'戦争',   reading:'せんそう',     sentence:'戦争のない世界を目指す。' },
+    { word:'選手',   reading:'せんしゅ',     sentence:'オリンピックの選手を応援した。' },
+    { word:'自然',   reading:'しぜん',       sentence:'自然の中で思い切り遊んだ。' },
+    { word:'争う',   reading:'あらそう',     sentence:'二チームが首位を争う。' },
+    { word:'倉庫',   reading:'そうこ',       sentence:'古い荷物を倉庫にしまった。' },
+    { word:'巣',     reading:'す',           sentence:'木の上に鳥が巣を作った。' },
+    { word:'束',     reading:'たば',         sentence:'花束を先生に渡した。' },
+    { word:'右側',   reading:'みぎがわ',     sentence:'廊下は右側を歩く。' },
+    { word:'続く',   reading:'つづく',       sentence:'雨が続く日が多い。' },
+    { word:'卒業',   reading:'そつぎょう',   sentence:'三月に小学校を卒業する。' },
+    { word:'孫',     reading:'まご',         sentence:'祖父母は孫が大好きだ。' },
+    { word:'地帯',   reading:'ちたい',       sentence:'この地帯は農業が盛んだ。' },
+    { word:'部隊',   reading:'ぶたい',       sentence:'消防の部隊が出動した。' },
+    { word:'友達',   reading:'ともだち',     sentence:'友達と一緒に遊んだ。' },
+    { word:'単語',   reading:'たんご',       sentence:'英語の単語を毎日覚えた。' },
+    { word:'装置',   reading:'そうち',       sentence:'安全装置が働いた。' },
+    { word:'仲間',   reading:'なかま',       sentence:'仲間と協力して問題を解いた。' },
+    { word:'貯金',   reading:'ちょきん',     sentence:'お小遣いを貯金している。' },
+    { word:'兆円',   reading:'ちょうえん',   sentence:'国の予算は何兆円にもなる。' },
+    { word:'大腸',   reading:'だいちょう',   sentence:'大腸は消化器官の一つだ。' },
+    { word:'低い',   reading:'ひくい',       sentence:'今日は気温が低い。' },
+    { word:'底',     reading:'そこ',         sentence:'プールの底まで潜った。' },
+    { word:'目的',   reading:'もくてき',     sentence:'旅行の目的を決めた。' },
   ],
   // ── 3学期（60字）──────────────────────────────────────────────
   3: [
-    { word:'辞典',     reading:'じてん' },        // 典
-    { word:'伝統',     reading:'でんとう' },      // 伝
-    { word:'生徒',     reading:'せいと' },        // 徒
-    { word:'努力',     reading:'どりょく' },      // 努
-    { word:'灯台',     reading:'とうだい' },      // 灯
-    { word:'働く',     reading:'はたらく' },      // 働
-    { word:'特別',     reading:'とくべつ' },      // 特
-    { word:'道徳',     reading:'どうとく' },      // 徳
-    { word:'栃木',     reading:'とちぎ' },        // 栃
-    { word:'奈良',     reading:'なら' },          // 奈
-    { word:'梨',       reading:'なし' },          // 梨
-    { word:'熱心',     reading:'ねっしん' },      // 熱
-    { word:'記念',     reading:'きねん' },        // 念
-    { word:'勝敗',     reading:'しょうはい' },    // 敗
-    { word:'梅',       reading:'うめ' },          // 梅
-    { word:'博士',     reading:'はかせ' },        // 博
-    { word:'ご飯',     reading:'ごはん' },        // 飯
-    { word:'費用',     reading:'ひよう' },        // 費
-    { word:'必要',     reading:'ひつよう' },      // 必
-    { word:'投票',     reading:'とうひょう' },    // 票
-    { word:'目標',     reading:'もくひょう' },    // 標
-    { word:'不思議',   reading:'ふしぎ' },        // 不
-    { word:'夫婦',     reading:'ふうふ' },        // 夫
-    { word:'付近',     reading:'ふきん' },        // 付
-    { word:'政府',     reading:'せいふ' },        // 府
-    { word:'副校長',   reading:'ふくこうちょう' },// 副
-    { word:'小麦粉',   reading:'こむぎこ' },      // 粉
-    { word:'兵士',     reading:'へいし' },        // 兵
-    { word:'別れる',   reading:'わかれる' },      // 別
-    { word:'辺り',     reading:'あたり' },        // 辺
-    { word:'変化',     reading:'へんか' },        // 変
-    { word:'便利',     reading:'べんり' },        // 便
-    { word:'包む',     reading:'つつむ' },        // 包
-    { word:'方法',     reading:'ほうほう' },      // 法
-    { word:'望む',     reading:'のぞむ' },        // 望
-    { word:'牧場',     reading:'ぼくじょう' },    // 牧
-    { word:'週末',     reading:'しゅうまつ' },    // 末
-    { word:'満足',     reading:'まんぞく' },      // 満
-    { word:'未来',     reading:'みらい' },        // 未
-    { word:'国民',     reading:'こくみん' },      // 民
-    { word:'無理',     reading:'むり' },          // 無
-    { word:'予約',     reading:'よやく' },        // 約
-    { word:'勇気',     reading:'ゆうき' },        // 勇
-    { word:'重要',     reading:'じゅうよう' },    // 要
-    { word:'養う',     reading:'やしなう' },      // 養
-    { word:'入浴',     reading:'にゅうよく' },    // 浴
-    { word:'利用',     reading:'りよう' },        // 利
-    { word:'陸地',     reading:'りくち' },        // 陸
-    { word:'良心',     reading:'りょうしん' },    // 良
-    { word:'料理',     reading:'りょうり' },      // 料
-    { word:'大量',     reading:'たいりょう' },    // 量
-    { word:'車輪',     reading:'しゃりん' },      // 輪
-    { word:'人類',     reading:'じんるい' },      // 類
-    { word:'命令',     reading:'めいれい' },      // 令
-    { word:'冷たい',   reading:'つめたい' },      // 冷
-    { word:'例えば',   reading:'たとえば' },      // 例
-    { word:'連絡',     reading:'れんらく' },      // 連
-    { word:'老人',     reading:'ろうじん' },      // 老
-    { word:'苦労',     reading:'くろう' },        // 労
-    { word:'記録',     reading:'きろく' },        // 録
+    { word:'辞典',     reading:'じてん',         sentence:'国語辞典で漢字の意味を調べた。' },
+    { word:'伝統',     reading:'でんとう',        sentence:'この地域には伝統的な祭りがある。' },
+    { word:'生徒',     reading:'せいと',          sentence:'この学校の生徒は元気だ。' },
+    { word:'努力',     reading:'どりょく',        sentence:'毎日努力して上達した。' },
+    { word:'灯台',     reading:'とうだい',        sentence:'海岸の灯台が光っている。' },
+    { word:'働く',     reading:'はたらく',        sentence:'両親は毎日働く。' },
+    { word:'特別',     reading:'とくべつ',        sentence:'今日は特別な日だ。' },
+    { word:'道徳',     reading:'どうとく',        sentence:'道徳の授業で命の大切さを学んだ。' },
+    { word:'栃木',     reading:'とちぎ',          sentence:'栃木県には日光東照宮がある。' },
+    { word:'奈良',     reading:'なら',            sentence:'奈良には大きな鹿がいる。' },
+    { word:'梨',       reading:'なし',            sentence:'梨は秋においしい果物だ。' },
+    { word:'熱心',     reading:'ねっしん',        sentence:'熱心に練習したので上手になった。' },
+    { word:'記念',     reading:'きねん',          sentence:'卒業記念に写真を撮った。' },
+    { word:'勝敗',     reading:'しょうはい',      sentence:'試合の勝敗はすでに決まった。' },
+    { word:'梅',       reading:'うめ',            sentence:'梅の花が春を告げた。' },
+    { word:'博士',     reading:'はかせ',          sentence:'その博士は多くの発明をした。' },
+    { word:'ご飯',     reading:'ごはん',          sentence:'朝はご飯をしっかり食べた。' },
+    { word:'費用',     reading:'ひよう',          sentence:'旅行の費用を計算した。' },
+    { word:'必要',     reading:'ひつよう',        sentence:'生きるためには水が必要だ。' },
+    { word:'投票',     reading:'とうひょう',      sentence:'選挙で投票した。' },
+    { word:'目標',     reading:'もくひょう',      sentence:'今年の目標を決めた。' },
+    { word:'不思議',   reading:'ふしぎ',          sentence:'宇宙には不思議なことがたくさんある。' },
+    { word:'夫婦',     reading:'ふうふ',          sentence:'仲のよい夫婦が散歩していた。' },
+    { word:'付近',     reading:'ふきん',          sentence:'学校の付近には公園がある。' },
+    { word:'政府',     reading:'せいふ',          sentence:'政府が新しい方針を発表した。' },
+    { word:'副校長',   reading:'ふくこうちょう',  sentence:'副校長先生に相談した。' },
+    { word:'小麦粉',   reading:'こむぎこ',        sentence:'小麦粉を使ってパンを作った。' },
+    { word:'兵士',     reading:'へいし',          sentence:'兵士が国を守る。' },
+    { word:'別れる',   reading:'わかれる',        sentence:'友達と別れることは悲しい。' },
+    { word:'辺り',     reading:'あたり',          sentence:'この辺りは昔、田んぼだった。' },
+    { word:'変化',     reading:'へんか',          sentence:'季節の変化を観察した。' },
+    { word:'便利',     reading:'べんり',          sentence:'スマートフォンはとても便利だ。' },
+    { word:'包む',     reading:'つつむ',          sentence:'プレゼントを包むのが上手だ。' },
+    { word:'方法',     reading:'ほうほう',        sentence:'問題を解く方法を考えた。' },
+    { word:'望む',     reading:'のぞむ',          sentence:'平和な世界を望む。' },
+    { word:'牧場',     reading:'ぼくじょう',      sentence:'牧場でウシを見た。' },
+    { word:'週末',     reading:'しゅうまつ',      sentence:'週末に家族で出かけた。' },
+    { word:'満足',     reading:'まんぞく',        sentence:'おいしい食事に満足した。' },
+    { word:'未来',     reading:'みらい',          sentence:'明るい未来を目指して勉強する。' },
+    { word:'国民',     reading:'こくみん',        sentence:'国民が選挙で代表を選ぶ。' },
+    { word:'無理',     reading:'むり',            sentence:'体に無理をしないようにする。' },
+    { word:'予約',     reading:'よやく',          sentence:'レストランを予約した。' },
+    { word:'勇気',     reading:'ゆうき',          sentence:'勇気を出して発表した。' },
+    { word:'重要',     reading:'じゅうよう',      sentence:'この問題はとても重要だ。' },
+    { word:'養う',     reading:'やしなう',        sentence:'体を養うために食事が大切だ。' },
+    { word:'入浴',     reading:'にゅうよく',      sentence:'毎日入浴して清潔にする。' },
+    { word:'利用',     reading:'りよう',          sentence:'図書館を利用して調べた。' },
+    { word:'陸地',     reading:'りくち',          sentence:'船が陸地に近づいた。' },
+    { word:'良心',     reading:'りょうしん',      sentence:'良心に従って行動した。' },
+    { word:'料理',     reading:'りょうり',        sentence:'母が料理を作ってくれた。' },
+    { word:'大量',     reading:'たいりょう',      sentence:'大量の荷物が届いた。' },
+    { word:'車輪',     reading:'しゃりん',        sentence:'車輪が外れて自転車が倒れた。' },
+    { word:'人類',     reading:'じんるい',        sentence:'人類は長い歴史を持つ。' },
+    { word:'命令',     reading:'めいれい',        sentence:'先生の命令に従った。' },
+    { word:'冷たい',   reading:'つめたい',        sentence:'冷たい水を飲んだ。' },
+    { word:'例えば',   reading:'たとえば',        sentence:'例えばりんごは果物だ。' },
+    { word:'連絡',     reading:'れんらく',        sentence:'友達に連絡をとった。' },
+    { word:'老人',     reading:'ろうじん',        sentence:'老人に席を譲った。' },
+    { word:'苦労',     reading:'くろう',          sentence:'苦労の末に夢を実現した。' },
+    { word:'記録',     reading:'きろく',          sentence:'走った時間を記録した。' },
   ]
+  }  // 4年生 end
 };
 
 // ================================================================
 //  状態
 // ================================================================
-let sel      = { semester: null, type: null };
+let sel      = { grade: null, semester: null, type: null };
 let qs       = [];
 let idx      = 0;
 let score    = 0;
@@ -810,18 +1232,462 @@ let results  = [];
 // ── キャンバス描画用 ──────────────────────────────────────────
 let drawCtx    = null;
 let isDrawing  = false;
-let canvasCSS  = 0;   // キャンバスの表示サイズ（CSS px）
+let canvasCSS  = 0;
+
+// PDF モーダル用
+let pdfSel = { grade: null, semester: null, qtype: null, count: null };
 
 // ================================================================
 //  設定画面
 // ================================================================
 function pick(kind, val, btn) {
+  if (btn.classList.contains('unavailable')) return;
   sel[kind] = val;
-  const grpId = kind === 'semester' ? 'grp-semester' : 'grp-type';
+  const grpId = kind === 'grade' ? 'grp-grade' :
+                kind === 'semester' ? 'grp-semester' : 'grp-type';
   document.querySelectorAll(`#${grpId} .select-btn`)
           .forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  document.getElementById('btn-start').disabled = !(sel.semester && sel.type);
+
+  if (kind === 'grade') {
+    // 学年変更時：学期・種類をリセット
+    sel.semester = null;
+    sel.type = null;
+    document.querySelectorAll('#grp-semester .select-btn, #grp-type .select-btn')
+            .forEach(b => b.classList.remove('selected'));
+    updateSemesterButtons('grp-semester', 'sem-btn', val);
+    updateTypeButtons(val, null);
+  }
+
+  if (kind === 'semester') {
+    // 学期変更時：穴埋めボタンの有効/無効を更新
+    sel.type = null;
+    document.querySelectorAll('#grp-type .select-btn').forEach(b => b.classList.remove('selected'));
+    updateTypeButtons(sel.grade, val);
+  }
+
+  document.getElementById('btn-start').disabled =
+    !(sel.grade && sel.semester && sel.type);
+}
+
+// 学年に合わせて学期ボタンの有効/無効を切り替える
+function updateSemesterButtons(grpId, prefix, grade) {
+  [1, 2, 3].forEach(sem => {
+    const btn = document.getElementById(`${prefix}-${sem}`);
+    if (!btn) return;
+    const hasData = DATA[grade][sem] && DATA[grade][sem].length > 0;
+    btn.classList.toggle('unavailable', !hasData);
+    btn.title = hasData ? '' : '準備中';
+  });
+}
+
+// 学年と学期に合わせて問題種類ボタンを制御
+function updateTypeButtons(grade, semester) {
+  const fillBtn = document.querySelector('#grp-type .select-btn:last-child');
+  if (!fillBtn) return;
+  fillBtn.classList.toggle('unavailable', false);
+  fillBtn.title = '';
+}
+
+function typeLabel(type) {
+  return type === 'random'  ? 'ランダム（混合）' :
+         type === 'reading' ? '読みのみ' :
+         type === 'writing' ? '書きのみ' : '穴埋めのみ';
+}
+
+// ================================================================
+//  PDF モーダル
+// ================================================================
+function openPdfModal() {
+  pdfSel = { grade: null, semester: null, qtype: null, count: null };
+  document.querySelectorAll('#pdf-grp-grade .select-btn, #pdf-grp-semester .select-btn, #pdf-grp-type .select-btn, #pdf-grp-count .select-btn')
+          .forEach(b => { b.classList.remove('selected'); b.classList.remove('unavailable'); });
+  document.getElementById('btn-pdf-gen').disabled = true;
+  document.getElementById('pdf-overlay').classList.add('open');
+}
+
+function closePdfModal() {
+  document.getElementById('pdf-overlay').classList.remove('open');
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('pdf-overlay')) closePdfModal();
+}
+
+function pickPdf(kind, val, btn) {
+  if (btn.classList.contains('unavailable')) return;
+  pdfSel[kind] = val;
+  const grpId = kind === 'grade'    ? 'pdf-grp-grade' :
+                kind === 'semester' ? 'pdf-grp-semester' :
+                kind === 'qtype'    ? 'pdf-grp-type' : 'pdf-grp-count';
+  document.querySelectorAll(`#${grpId} .select-btn`)
+          .forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  if (kind === 'grade') {
+    pdfSel.semester = null;
+    pdfSel.qtype    = null;
+    document.querySelectorAll('#pdf-grp-semester .select-btn, #pdf-grp-type .select-btn')
+            .forEach(b => b.classList.remove('selected'));
+    updateSemesterButtons('pdf-grp-semester', 'pdf-sem-btn', val);
+    updatePdfTypeButtons(val, null);
+  }
+
+  if (kind === 'semester') {
+    pdfSel.qtype = null;
+    document.querySelectorAll('#pdf-grp-type .select-btn').forEach(b => b.classList.remove('selected'));
+    updatePdfTypeButtons(pdfSel.grade, val);
+  }
+
+  document.getElementById('btn-pdf-gen').disabled =
+    !(pdfSel.grade && pdfSel.semester && pdfSel.qtype && pdfSel.count);
+}
+
+function updatePdfTypeButtons(grade, semester) {
+  const fillBtn = document.querySelector('#pdf-grp-type .select-btn:last-child');
+  if (!fillBtn) return;
+  const fillAvailable = !(grade === 3 && semester === 3);
+  fillBtn.classList.toggle('unavailable', !fillAvailable);
+  fillBtn.title = fillAvailable ? '' : '3学期の穴埋めは準備中です';
+}
+
+// ================================================================
+//  PDF 生成
+// ================================================================
+function generatePdf() {
+  const pool  = shuffle([...DATA[pdfSel.grade][pdfSel.semester]]);
+  const count = pdfSel.count;
+  const items = pool.slice(0, count);
+
+  // 問題タイプを選択に応じて割り当て
+  let types;
+  if (pdfSel.qtype === 'reading') {
+    types = Array(count).fill('reading');
+  } else if (pdfSel.qtype === 'writing') {
+    // 書きのみ：書き と 穴埋め を半々
+    types = Array.from({ length: count }, (_, i) => i % 2 === 0 ? 'writing' : 'fill');
+    shuffle(types);
+  } else if (pdfSel.qtype === 'fill') {
+    types = Array(count).fill('fill');
+  } else {
+    // ランダム：3年生は読み・書きのみ、4年生は穴埋めも含む
+    if (pdfSel.grade === 3) {
+      types = Array.from({ length: count }, (_, i) => i % 2 === 0 ? 'reading' : 'writing');
+    } else {
+      types = Array.from({ length: count }, (_, i) => ['reading', 'writing', 'fill'][i % 3]);
+    }
+    shuffle(types);
+  }
+
+  const questions = items.map((q, i) => ({ ...q, qtype: types[i] }));
+  const html = buildPdfHtml(pdfSel.grade, pdfSel.semester, pdfSel.qtype, count, questions);
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+function makeBlanks(word) {
+  // 四角を文字数分並べる（書き・穴埋め用）
+  return '<span class="ans-boxes">' +
+    [...word].map(() => '<span class="ans-box"></span>').join('') +
+    '</span>';
+}
+
+function makeSentenceWithBlank(sentence, word) {
+  const blank = '（' + '　'.repeat(word.length) + '）';
+  return sentence.replace(word, blank);
+}
+
+function buildPdfHtml(grade, semester, qtype, count, questions) {
+  const semLabel  = `${grade}年生 ${semester}学期`;
+  const typeStr   = qtype === 'reading' ? '読みのみ' :
+                    qtype === 'writing' ? '書きのみ' :
+                    qtype === 'fill'    ? '穴埋めのみ' : 'ランダム（混合）';
+
+  const qHtml = questions.map((q, i) => {
+    let inner = '';
+    if (q.qtype === 'reading') {
+      inner = `
+        <div class="q-label-badge reading">読み</div>
+        <div class="q-word">${q.word}</div>
+        <div class="q-inst">よみかたをひらがなで書きましょう</div>
+        <div class="ans-line"></div>`;
+    } else if (q.qtype === 'writing') {
+      const hasOku = /[ぁ-ん]$/.test(q.word);
+      inner = `
+        <div class="q-label-badge writing">書き</div>
+        <div class="q-inst">漢字で書きましょう${hasOku ? '（送りがなも）' : ''}</div>
+        <div class="ans-with-ruby">
+          ${makeBlanks(q.word)}
+          <div class="ans-furigana">よみ：${q.reading}</div>
+        </div>`;
+    } else {
+      const sentenceWithRuby = q.sentence.replace(q.word,
+        `<ruby>（${'　'.repeat(q.word.length)}）<rt>${q.reading}</rt></ruby>`);
+      inner = `
+        <div class="q-label-badge fill">穴埋め</div>
+        <div class="q-sentence">${sentenceWithRuby}</div>
+        <div class="q-inst">（　）に漢字を書きましょう</div>
+        <div class="ans-with-ruby">
+          ${makeBlanks(q.word)}
+          <div class="ans-furigana">よみ：${q.reading}</div>
+        </div>`;
+    }
+    return `
+      <div class="q-card">
+        <div class="q-num">（${i + 1}）</div>
+        ${inner}
+      </div>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>4年生 ${semLabel} 漢字テスト（${typeStr}・${count}問）</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+@page { size: A4 portrait; margin: 12mm 14mm; }
+body {
+  font-family: 'Hiragino Kaku Gothic ProN','Hiragino Sans','Yu Gothic',Meiryo,sans-serif;
+  font-size: 11pt;
+  color: #111;
+  background: white;
+}
+
+/* 印刷コントロール（印刷時は非表示） */
+.print-controls {
+  background: #f0f8ff;
+  border: 2px solid #4a90d9;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.print-controls p { flex: 1; color: #333; font-size: 10pt; }
+.btn-print {
+  padding: 10px 22px;
+  background: #4a90d9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 11pt;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-print:hover { background: #357abd; }
+.btn-close-win {
+  padding: 10px 16px;
+  background: white;
+  color: #666;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 10pt;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ヘッダー */
+.test-header {
+  border-bottom: 2.5px solid #333;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+.test-title {
+  font-size: 16pt;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.test-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.meta-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10pt;
+}
+.meta-field .meta-label { white-space: nowrap; }
+.meta-underline {
+  border-bottom: 1.5px solid #333;
+  min-width: 120px;
+  height: 18px;
+  flex: 1;
+}
+.meta-field.score .meta-underline { min-width: 50px; flex: none; }
+
+/* 注意書き */
+.test-note {
+  font-size: 8.5pt;
+  color: #555;
+  margin: 6px 0 8px;
+}
+
+/* 問題グリッド */
+.q-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.q-card {
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  padding: 7px 9px;
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.q-num {
+  font-weight: bold;
+  font-size: 11pt;
+  margin-bottom: 1px;
+}
+
+.q-label-badge {
+  display: inline-block;
+  font-size: 8pt;
+  font-weight: bold;
+  padding: 1px 7px;
+  border-radius: 3px;
+  margin-bottom: 3px;
+}
+.q-label-badge.reading { background: #dceefb; color: #1a5f9e; border: 1px solid #9bc8ef; }
+.q-label-badge.writing { background: #ede7f6; color: #5e35b1; border: 1px solid #c5b0e6; }
+.q-label-badge.fill    { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+
+.q-word {
+  font-size: 20pt;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin: 2px 0;
+  line-height: 1.2;
+}
+.q-word.kana { font-size: 16pt; letter-spacing: 2px; }
+
+.q-inst {
+  font-size: 8pt;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.q-sentence {
+  font-size: 11pt;
+  line-height: 1.8;
+  margin: 2px 0 4px;
+}
+
+/* 読み答え欄（下線） */
+.ans-line {
+  border-bottom: 1.5px solid #333;
+  width: 85%;
+  height: 22px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* 書き・穴埋め答え欄（マス目） */
+.ans-boxes {
+  display: flex;
+  gap: 3px;
+  margin-top: 3px;
+}
+.ans-box {
+  width: 42px;
+  height: 42px;
+  border: 1.5px solid #333;
+  display: inline-block;
+  position: relative;
+}
+/* マス目の十字ガイド */
+.ans-box::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0;
+  width: 0; height: 100%;
+  border-left: 1px dashed #ddd;
+}
+.ans-box::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 100%; height: 0;
+  border-top: 1px dashed #ddd;
+}
+.ans-with-ruby {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.ans-furigana {
+  font-size: 8.5pt;
+  color: #1a5f9e;
+  letter-spacing: 0.5px;
+  margin-left: 1px;
+}
+ruby rt {
+  font-size: 8pt;
+  color: #1a5f9e;
+  letter-spacing: 1px;
+}
+
+@media print {
+  .print-controls { display: none !important; }
+  body { margin: 0; }
+  .q-card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<div class="print-controls">
+  <p>📄 印刷してPDFとして保存できます。「印刷する」ボタンを押してください。</p>
+  <button class="btn-print" onclick="window.print()">🖨️ 印刷する</button>
+  <button class="btn-close-win" onclick="window.close()">✕ 閉じる</button>
+</div>
+
+<div class="test-header">
+  <div class="test-title">小学4年生 ${semLabel} 漢字テスト（${typeStr}・${count}問）</div>
+  <div class="test-meta">
+    <div class="meta-field" style="flex:2">
+      <span class="meta-label">名前：</span>
+      <span class="meta-underline"></span>
+    </div>
+    <div class="meta-field" style="flex:1.2">
+      <span class="meta-label">日付：</span>
+      <span class="meta-underline"></span>
+      <span class="meta-label">月</span>
+      <span class="meta-underline" style="min-width:30px;"></span>
+      <span class="meta-label">日</span>
+    </div>
+    <div class="meta-field score">
+      <span class="meta-label">点数：</span>
+      <span class="meta-underline"></span>
+      <span class="meta-label">点</span>
+    </div>
+  </div>
+</div>
+<div class="test-note">
+  ※ 読み…漢字の読みをひらがなで書きましょう　／　書き…ひらがなを漢字で書きましょう　／　穴埋め…（　）に漢字を書きましょう
+</div>
+
+<div class="q-grid">
+${qHtml}
+</div>
+
+</body>
+</html>`;
 }
 
 // ================================================================
@@ -836,13 +1702,30 @@ function shuffle(arr) {
 }
 
 function startQuiz() {
-  qs       = shuffle([...DATA[sel.semester]]).slice(0, 10);
+  const pool = shuffle([...DATA[sel.grade][sel.semester]]);
+  const qtypes = buildQtypes(sel.type, 10);
+  qs = pool.slice(0, 10).map((q, i) => ({ ...q, qtype: qtypes[i] }));
   idx      = 0;
   score    = 0;
   answered = false;
   results  = [];
+
+  // モード情報ラベル
+  const gradeLabel = `${sel.grade}年生`;
+  const semLabel   = `${sel.semester}学期`;
+  document.getElementById('quiz-mode-info').textContent =
+    `${gradeLabel} ${semLabel} ・ ${typeLabel(sel.type)} ・ 10問`;
+
   showScreen('screen-quiz');
   renderQ();
+}
+
+function buildQtypes(type, count) {
+  if (type === 'reading') return Array(count).fill('reading');
+  if (type === 'writing') return Array(count).fill('writing');
+  if (type === 'fill')    return Array(count).fill('fill');
+  const arr = Array.from({ length: count }, (_, i) => ['reading', 'writing', 'fill'][i % 3]);
+  return shuffle(arr);
 }
 
 function showScreen(id) {
@@ -859,11 +1742,9 @@ function renderQ() {
   const q     = qs[idx];
   const total = qs.length;
 
-  // 進捗更新
   document.getElementById('prog-text').textContent = `問題 ${idx + 1} / ${total}`;
   document.getElementById('prog-bar').style.width  = `${((idx + 1) / total) * 100}%`;
 
-  // フィードバック・次へボタンをリセット
   const fb = document.getElementById('feedback');
   fb.className = 'feedback';
   fb.innerHTML = '';
@@ -872,8 +1753,7 @@ function renderQ() {
 
   const area = document.getElementById('question-area');
 
-  if (sel.type === 'reading') {
-    // ── 読みテスト ──────────────────────
+  if (qs[idx].qtype === 'reading') {
     area.innerHTML = `
       <div style="text-align:center;margin-bottom:14px;">
         <span class="type-badge reading">📖 読みテスト</span>
@@ -890,8 +1770,25 @@ function renderQ() {
     chk.addEventListener('click', checkReading);
     setTimeout(() => inp.focus(), 60);
 
+  } else if (qs[idx].qtype === 'fill') {
+    const sentenceWithBlank = makeSentenceWithBlank(q.sentence, q.word);
+    area.innerHTML = `
+      <div style="text-align:center;margin-bottom:14px;">
+        <span class="type-badge fill">📝 穴埋めテスト</span>
+      </div>
+      <div class="question-sentence">${sentenceWithBlank}</div>
+      <p class="question-hint">（　）に入る言葉の読みをひらがなで入力してね</p>
+      <input class="answer-input" id="ans-input" type="text"
+             placeholder="ひらがなで入力…" autocomplete="off" autocorrect="off" autocapitalize="none">
+      <button class="btn-check" id="btn-check">こたえる ✔</button>
+    `;
+    const inp = document.getElementById('ans-input');
+    const chk = document.getElementById('btn-check');
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkReading(); });
+    chk.addEventListener('click', checkReading);
+    setTimeout(() => inp.focus(), 60);
+
   } else {
-    // ── 書きテスト（手書き）──────────────────────
     area.innerHTML = `
       <div style="text-align:center;margin-bottom:14px;">
         <span class="type-badge writing">✏️ 書きテスト</span>
@@ -923,7 +1820,6 @@ function renderQ() {
     document.getElementById('btn-self-correct').addEventListener('click', () => selfScore(true));
     document.getElementById('btn-self-wrong').addEventListener('click',   () => selfScore(false));
 
-    // DOMが描画されてからキャンバスを初期化
     setTimeout(initCanvas, 0);
   }
 }
@@ -939,7 +1835,6 @@ function initCanvas() {
   const dpr = window.devicePixelRatio || 1;
   canvasCSS = wrapper.clientWidth;
 
-  // 高解像度対応
   canvas.width  = Math.round(canvasCSS * dpr);
   canvas.height = Math.round(canvasCSS * dpr);
 
@@ -948,25 +1843,21 @@ function initCanvas() {
 
   drawGuideLines();
 
-  // 描画スタイル
   drawCtx.strokeStyle = '#1a1a2e';
   drawCtx.lineWidth   = 5;
   drawCtx.lineCap     = 'round';
   drawCtx.lineJoin    = 'round';
 
-  // マウスイベント
   canvas.addEventListener('mousedown',  onMouseDown);
   canvas.addEventListener('mousemove',  onMouseMove);
   canvas.addEventListener('mouseup',    onMouseUp);
   canvas.addEventListener('mouseleave', onMouseUp);
 
-  // タッチイベント（スマホ・タブレット対応）
   canvas.addEventListener('touchstart', onTouchStart, { passive: false });
   canvas.addEventListener('touchmove',  onTouchMove,  { passive: false });
   canvas.addEventListener('touchend',   onTouchEnd,   { passive: false });
 }
 
-// ── ガイドライン描画 ───────────────────────────────────────────
 function drawGuideLines() {
   if (!drawCtx) return;
   const s = canvasCSS;
@@ -976,14 +1867,13 @@ function drawGuideLines() {
   drawCtx.lineWidth   = 1;
   drawCtx.setLineDash([5, 5]);
   drawCtx.beginPath();
-  drawCtx.moveTo(s / 2, m);       drawCtx.lineTo(s / 2, s - m);  // 縦
-  drawCtx.moveTo(m, s / 2);       drawCtx.lineTo(s - m, s / 2);  // 横
+  drawCtx.moveTo(s / 2, m);       drawCtx.lineTo(s / 2, s - m);
+  drawCtx.moveTo(m, s / 2);       drawCtx.lineTo(s - m, s / 2);
   drawCtx.stroke();
   drawCtx.setLineDash([]);
   drawCtx.restore();
 }
 
-// ── キャンバスリセット ─────────────────────────────────────────
 function clearCanvas() {
   if (!drawCtx) return;
   drawCtx.clearRect(0, 0, canvasCSS, canvasCSS);
@@ -994,7 +1884,6 @@ function clearCanvas() {
   drawCtx.lineJoin    = 'round';
 }
 
-// ── マウス描画 ─────────────────────────────────────────────────
 function getPos(canvas, e) {
   const r = canvas.getBoundingClientRect();
   return { x: e.clientX - r.left, y: e.clientY - r.top };
@@ -1023,7 +1912,6 @@ function onMouseUp() {
   }
 }
 
-// ── タッチ描画 ─────────────────────────────────────────────────
 function getTouchPos(canvas, touch) {
   const r = canvas.getBoundingClientRect();
   return { x: touch.clientX - r.left, y: touch.clientY - r.top };
@@ -1055,9 +1943,6 @@ function onTouchEnd(e) {
   }
 }
 
-// ================================================================
-//  正解を表示
-// ================================================================
 function revealAnswer() {
   const q = qs[idx];
   document.getElementById('correct-kanji').textContent = q.word;
@@ -1065,9 +1950,6 @@ function revealAnswer() {
   document.getElementById('btn-reveal').disabled = true;
 }
 
-// ================================================================
-//  自己採点
-// ================================================================
 function selfScore(isCorrect) {
   if (answered) return;
   answered = true;
@@ -1093,9 +1975,6 @@ function selfScore(isCorrect) {
   nb.textContent   = idx === qs.length - 1 ? '結果を見る 🎊' : 'つぎへ →';
 }
 
-// ================================================================
-//  読みテスト 採点
-// ================================================================
 function checkReading() {
   if (answered) return;
   const inp = document.getElementById('ans-input');
@@ -1113,9 +1992,6 @@ function checkReading() {
   showFeedback(ok, q.reading, val);
 }
 
-// ================================================================
-//  フィードバック表示（読みテスト用）
-// ================================================================
 function showFeedback(ok, correctReading, userInput) {
   const fb = document.getElementById('feedback');
   if (ok) {
@@ -1132,18 +2008,12 @@ function showFeedback(ok, correctReading, userInput) {
   nb.textContent   = idx === qs.length - 1 ? '結果を見る 🎊' : 'つぎへ →';
 }
 
-// ================================================================
-//  次の問題 / 結果画面へ
-// ================================================================
 function nextQ() {
   idx++;
   if (idx >= qs.length) showResult();
   else renderQ();
 }
 
-// ================================================================
-//  結果画面
-// ================================================================
 function showResult() {
   showScreen('screen-result');
   const total = qs.length;
