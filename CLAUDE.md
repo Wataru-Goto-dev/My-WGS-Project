@@ -41,3 +41,33 @@ README.md
 - [ ] ローカルストレージを使った学習履歴・苦手漢字の記録
 - [ ] タイマー機能（制限時間付きモード）
 - [ ] 音声読み上げ対応（Web Speech API）
+
+## 次回の作業内容
+
+以下の2つのバグ修正が途中で止まっているため、再開してください。
+
+### バグ1：穴埋め問題でふりがなが表示されない
+
+- 例文穴埋め問題で空欄に入る漢字のふりがなが表示されていない
+- 空欄の下にふりがなを小さめの文字で表示する
+- PDF出力時も同様に対応する
+
+**現在の状態（途中まで実装済み）**
+- `makeSentenceWithBlank(sentence, word, reading)` に `reading` 引数を追加済み
+- `fill-blank-wrap` / `fill-blank` / `fill-reading` クラスのHTML生成ロジックを追加済み
+- 残り作業：
+  1. CSSに `.fill-blank-wrap` / `.fill-blank` / `.fill-reading` のスタイルを追加
+  2. 穴埋め問題のレンダリング箇所（`renderQ` 内 `q.qtype === 'fill'` ブロック）で `makeSentenceWithBlank(q.sentence, q.word, q.reading)` に引数を追加
+  3. PDF生成の `buildPdfHtml` 内の穴埋め表示にもふりがなを追加
+
+### バグ2：テストを中断するボタンがない
+
+- テスト中に中断してトップ画面に戻れるボタンを追加
+- 画面上部に「中断する」ボタンを常に表示
+- 確認ダイアログ（はい/いいえ）を表示してから戻る
+
+**現在の状態（途中まで実装済み）**
+- クイズ画面HTMLに `.quiz-top-bar` と `.btn-abort` ボタンを追加済み
+- CSS（`.quiz-top-bar` / `.quiz-info-bar` / `.btn-abort`）を追加済み
+- 残り作業：
+  1. `confirmAbort()` 関数の実装（`window.confirm` で確認 → `goHome()` 呼び出し）
