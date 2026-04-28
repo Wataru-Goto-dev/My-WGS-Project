@@ -821,10 +821,11 @@ body {
       <div class="step-dot"><span>5</span></div>
     </div>
     <div class="step-title">📅 学期を選ぼう</div>
-    <div class="choice-grid cols-3" id="grp-semester">
+    <div class="choice-grid cols-4" id="grp-semester">
       <button class="choice-btn" id="sem-btn-1" onclick="pickSemester(1, this)">1学期</button>
       <button class="choice-btn" id="sem-btn-2" onclick="pickSemester(2, this)">2学期</button>
       <button class="choice-btn" id="sem-btn-3" onclick="pickSemester(3, this)">3学期</button>
+      <button class="choice-btn" id="sem-btn-0" onclick="pickSemester(0, this)">全学期</button>
     </div>
   </div>
 
@@ -1537,7 +1538,7 @@ function pickCount(count, btn) {
   sel.count = count;
   // 確認画面を更新
   document.getElementById('conf-grade').textContent    = sel.grade + '年生';
-  document.getElementById('conf-semester').textContent = sel.semester + '学期';
+  document.getElementById('conf-semester').textContent = sel.semester === 0 ? '全学期' : sel.semester + '学期';
   document.getElementById('conf-type').textContent     = typeLabel(sel.type);
   document.getElementById('conf-count').textContent    = count + '問';
   currentStep = 5;
@@ -1557,9 +1558,8 @@ function updateSemesterBtns(prefix, grade) {
 function updateFillBtn(grade, semester) {
   const fillBtn = document.getElementById('type-fill-btn');
   if (!fillBtn) return;
-  const ok = !(grade === 3 && semester === 3);
-  fillBtn.classList.toggle('unavailable', !ok);
-  fillBtn.title = ok ? '' : '3年3学期の穴埋めは準備中です';
+  fillBtn.classList.remove('unavailable');
+  fillBtn.title = '';
 }
 
 function typeLabel(type) {
@@ -1971,7 +1971,10 @@ function shuffle(arr) {
 
 function startQuiz() {
   const count  = sel.count || 10;
-  const pool   = shuffle([...DATA[sel.grade][sel.semester]]);
+  const rawPool = sel.semester === 0
+    ? [...DATA[sel.grade][1], ...DATA[sel.grade][2], ...DATA[sel.grade][3]]
+    : [...DATA[sel.grade][sel.semester]];
+  const pool   = shuffle(rawPool);
   const qtypes = buildQtypes(sel.type, count);
   qs       = pool.slice(0, count).map((q, i) => ({ ...q, qtype: qtypes[i] }));
   idx      = 0;
@@ -1980,9 +1983,9 @@ function startQuiz() {
   results  = [];
 
   const gradeLabel = sel.grade + '年生';
-  const semLabel   = sel.semester + '学期';
+  const semLabel   = sel.semester === 0 ? '全学期' : sel.semester + '学期';
   document.getElementById('quiz-mode-info').textContent =
-    gradeLabel + ' ' + semLabel + ' · ' + typeLabel(sel.type) + ' · ' + count + '問';
+    gradeLabel + ' · ' + semLabel + ' · ' + typeLabel(sel.type) + ' · ' + count + '問';
 
   showScreen('screen-quiz');
   renderQ();
