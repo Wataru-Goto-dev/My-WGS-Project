@@ -1618,7 +1618,7 @@ function pickPdf(kind, val, btn) {
     }
   }
   document.getElementById('btn-pdf-gen').disabled =
-    !(pdfSel.grade && pdfSel.semester && pdfSel.qtype && pdfSel.count);
+    !(pdfSel.grade && pdfSel.semester !== null && pdfSel.qtype && pdfSel.count);
 }
 
 // ================================================================
