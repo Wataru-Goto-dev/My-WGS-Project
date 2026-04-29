@@ -978,10 +978,11 @@ body {
     </div>
 
     <div class="pdf-section-label">学期</div>
-    <div class="choice-grid cols-3" id="pdf-grp-semester" style="margin-bottom:20px;">
+    <div class="choice-grid cols-4" id="pdf-grp-semester" style="margin-bottom:20px;">
       <button class="choice-btn" id="pdf-sem-btn-1" onclick="pickPdf('semester',1,this)">1学期</button>
       <button class="choice-btn" id="pdf-sem-btn-2" onclick="pickPdf('semester',2,this)">2学期</button>
       <button class="choice-btn" id="pdf-sem-btn-3" onclick="pickPdf('semester',3,this)">3学期</button>
+      <button class="choice-btn" id="pdf-sem-btn-0" onclick="pickPdf('semester',0,this)">全学期</button>
     </div>
 
     <div class="pdf-section-label">問題の種類</div>
@@ -1611,6 +1612,10 @@ function pickPdf(kind, val, btn) {
       const ok = !(pdfSel.grade === 3 && val === 3);
       fillBtn.classList.toggle('unavailable', !ok);
     }
+    // 全学期ボタンは常に有効（全学期プールには穴埋め対応データが含まれる）
+    if (val === 0) {
+      if (fillBtn) fillBtn.classList.remove('unavailable');
+    }
   }
   document.getElementById('btn-pdf-gen').disabled =
     !(pdfSel.grade && pdfSel.semester && pdfSel.qtype && pdfSel.count);
@@ -1620,7 +1625,10 @@ function pickPdf(kind, val, btn) {
 //  PDF 生成
 // ================================================================
 function generatePdf() {
-  const pool  = shuffle([...DATA[pdfSel.grade][pdfSel.semester]]);
+  const allData = pdfSel.semester === 0
+    ? [...DATA[pdfSel.grade][1], ...DATA[pdfSel.grade][2], ...DATA[pdfSel.grade][3]]
+    : DATA[pdfSel.grade][pdfSel.semester];
+  const pool  = shuffle([...allData]);
   const count = pdfSel.count;
   const items = pool.slice(0, count);
   let types;
@@ -1666,7 +1674,7 @@ function makeSentenceWithBlank(sentence, word, reading) {
 
 
 function buildPdfHtml(grade, semester, qtype, count, questions) {
-  const semLabel  = `${grade}年生 ${semester}学期`;
+  const semLabel  = semester === 0 ? `${grade}年生 全学期` : `${grade}年生 ${semester}学期`;
   const typeStr   = qtype === 'reading' ? '読みのみ' :
                     qtype === 'writing' ? '書きのみ' :
                     qtype === 'fill'    ? '穴埋めのみ' : 'ランダム（混合）';
