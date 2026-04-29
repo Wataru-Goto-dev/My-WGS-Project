@@ -1609,8 +1609,7 @@ function pickPdf(kind, val, btn) {
     document.querySelectorAll('#pdf-grp-type .choice-btn').forEach(b => b.classList.remove('selected'));
     const fillBtn = document.querySelector('#pdf-grp-type .choice-btn:last-child');
     if (fillBtn) {
-      const ok = !(pdfSel.grade === 3 && val === 3);
-      fillBtn.classList.toggle('unavailable', !ok);
+      fillBtn.classList.remove('unavailable');
     }
     // 全学期ボタンは常に有効（全学期プールには穴埋め対応データが含まれる）
     if (val === 0) {
