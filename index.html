@@ -1662,8 +1662,14 @@ function generatePdf() {
   const questions = items.map((q, i) => ({ ...q, qtype: types[i] }));
   const html = buildPdfHtml(pdfSel.grade, pdfSel.semester, pdfSel.qtype, count, questions);
   const w = window.open('', '_blank');
+  if (!w) {
+    alert('ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください。');
+    return;
+  }
   w.document.write(html);
   w.document.close();
+  w.focus();
+  w.print();
 }
 
 function makeBlanks(word) {
@@ -1965,7 +1971,7 @@ ruby rt {
 </div>
 
 <div class="test-header">
-  <div class="test-title">小学4年生 ${semLabel}${rndLabel} 漢字テスト（${typeStr}・${count}問）</div>
+  <div class="test-title">小学${semLabel} 漢字テスト（${typeStr}・${count}問）</div>
   <div class="test-meta">
     <div class="meta-field" style="flex:2">
       <span class="meta-label">名前：</span>
