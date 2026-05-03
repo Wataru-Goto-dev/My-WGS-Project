@@ -490,6 +490,67 @@ body {
 .btn-check:active:not(:disabled) { background: #28A74E; transform: scale(0.98); }
 .btn-check:disabled { background: var(--fill1); color: var(--text3); cursor: not-allowed; }
 
+/* ── かなテンキー ─────────── */
+.kana-tenkey {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.kana-tenkey .tenkey-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  border: none;
+  border-radius: var(--r-md);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.1s ease, transform 0.08s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  background: var(--card);
+  color: var(--text1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+.kana-tenkey .tenkey-btn .tk-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.kana-tenkey .tenkey-btn:active { background: var(--fill2); transform: scale(0.94); }
+.kana-tenkey .tenkey-btn.btn-delete {
+  background: var(--fill1);
+  font-size: 22px;
+}
+.kana-tenkey .tenkey-btn.btn-confirm {
+  background: var(--green);
+  color: white;
+  font-size: 16px;
+}
+.kana-tenkey .tenkey-btn.btn-confirm:active { background: #28A74E; }
+.kana-tenkey .tenkey-btn.btn-modifier {
+  background: #EEF2FF;
+  color: #3B4DB8;
+  font-size: 16px;
+  min-height: 48px;
+}
+.kana-tenkey .tenkey-btn.btn-modifier:active { background: #D8DFFF; }
+.kana-tenkey .tenkey-btn.btn-modifier.active-mod {
+  background: var(--blue);
+  color: white;
+}
+/* pending char highlight */
+.answer-input.pending {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(0,122,255,0.14);
+}
+
 /* ── 手書きキャンバス ─────── */
 .canvas-wrapper {
   width: 100%;
@@ -2073,13 +2134,27 @@ function renderQ() {
       </div>
       <p class="question-hint">ひらがなで読みかたを入力してね</p>
       <input class="answer-input" id="ans-input" type="text"
-             placeholder="ひらがなで入力…" autocomplete="off" autocorrect="off" autocapitalize="none">
-      <button class="btn-check" id="btn-check">こたえる ✔</button>
+             placeholder="ここに入力されます" readonly>
+      <div class="kana-tenkey" id="kana-tenkey">
+        <button class="tenkey-btn" data-key="1">1<span class="tk-sub">あ行</span></button>
+        <button class="tenkey-btn" data-key="2">2<span class="tk-sub">か行</span></button>
+        <button class="tenkey-btn" data-key="3">3<span class="tk-sub">さ行</span></button>
+        <button class="tenkey-btn" data-key="4">4<span class="tk-sub">た行</span></button>
+        <button class="tenkey-btn" data-key="5">5<span class="tk-sub">な行</span></button>
+        <button class="tenkey-btn" data-key="6">6<span class="tk-sub">は行</span></button>
+        <button class="tenkey-btn" data-key="7">7<span class="tk-sub">ま行</span></button>
+        <button class="tenkey-btn" data-key="8">8<span class="tk-sub">や行</span></button>
+        <button class="tenkey-btn" data-key="9">9<span class="tk-sub">ら行</span></button>
+        <button class="tenkey-btn btn-modifier" data-key="daku">゛<span class="tk-sub">濁点</span></button>
+        <button class="tenkey-btn" data-key="0">0<span class="tk-sub">わ行</span></button>
+        <button class="tenkey-btn btn-modifier" data-key="small">小<span class="tk-sub">小文字</span></button>
+        <button class="tenkey-btn btn-delete" data-key="del">⌫</button>
+        <button class="tenkey-btn btn-modifier" data-key="choon">ー<span class="tk-sub">長音</span></button>
+        <button class="tenkey-btn btn-confirm" data-key="confirm">こたえる ✔</button>
+      </div>
     `;
-    const inp = document.getElementById('ans-input');
-    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkReading(); });
-    document.getElementById('btn-check').addEventListener('click', checkReading);
-    setTimeout(() => inp.focus(), 80);
+    initTenkey();
+    setTimeout(() => {}, 0); // no auto-focus needed
 
   } else if (q.qtype === 'fill') {
     const sentenceWithBlank = makeSentenceWithBlank(q.sentence, q.word, q.reading);
@@ -2276,14 +2351,175 @@ function selfScore(isCorrect) {
   nb.textContent   = idx === qs.length - 1 ? '結果を見る 🎊' : 'つぎへ →';
 }
 
+// ================================================================
+//  かなテンキー
+// ================================================================
+const TENKEY_MAP = {
+  '1': ['あ','い','う','え','お'],
+  '2': ['か','き','く','け','こ'],
+  '3': ['さ','し','す','せ','そ'],
+  '4': ['た','ち','つ','て','と'],
+  '5': ['な','に','ぬ','ね','の'],
+  '6': ['は','ひ','ふ','へ','ほ'],
+  '7': ['ま','み','む','め','も'],
+  '8': ['や','ゆ','よ'],
+  '9': ['ら','り','る','れ','ろ'],
+  '0': ['わ','を','ん'],
+};
+const DAKUTEN_MAP = {
+  'か':'が','き':'ぎ','く':'ぐ','け':'げ','こ':'ご',
+  'さ':'ざ','し':'じ','す':'ず','せ':'ぜ','そ':'ぞ',
+  'た':'だ','ち':'ぢ','つ':'づ','て':'で','と':'ど',
+  'は':'ば','ひ':'び','ふ':'ぶ','へ':'べ','ほ':'ぼ',
+  'が':'か','ぎ':'き','ぐ':'く','げ':'け','ご':'こ',
+  'ざ':'さ','じ':'し','ず':'す','ぜ':'せ','ぞ':'そ',
+  'だ':'た','ぢ':'ち','づ':'つ','で':'て','ど':'と',
+  'ば':'は','び':'ひ','ぶ':'ふ','べ':'へ','ぼ':'ほ',
+};
+const HANDAKUTEN_MAP = {
+  'は':'ぱ','ひ':'ぴ','ふ':'ぷ','へ':'ぺ','ほ':'ぽ',
+  'ば':'ぱ','び':'ぴ','ぶ':'ぷ','べ':'ぺ','ぼ':'ぽ',
+  'ぱ':'は','ぴ':'ひ','ぷ':'ふ','ぺ':'へ','ぽ':'ほ',
+};
+const SMALL_MAP = {
+  'あ':'ぁ','い':'ぃ','う':'ぅ','え':'ぇ','お':'ぉ',
+  'や':'ゃ','ゆ':'ゅ','よ':'ょ','つ':'っ','わ':'ゎ',
+  'ぁ':'あ','ぃ':'い','ぅ':'う','ぇ':'え','ぉ':'お',
+  'ゃ':'や','ゅ':'ゆ','ょ':'よ','っ':'つ','ゎ':'わ',
+};
+
+let tkLastKey  = null;   // 最後に押した数字キー
+let tkLastIdx  = -1;     // そのキーの何番目か
+let tkCommitted = '';    // 確定済み文字列
+let tkPending  = '';     // 未確定1文字（現在サイクル中）
+let tkTimer    = null;   // 自動確定タイマー
+
+function tkRender() {
+  const inp = document.getElementById('ans-input');
+  if (!inp) return;
+  inp.value = tkCommitted + tkPending;
+  if (tkPending) {
+    inp.classList.add('pending');
+  } else {
+    inp.classList.remove('pending');
+  }
+}
+
+function tkCommit() {
+  tkCommitted += tkPending;
+  tkPending  = '';
+  tkLastKey  = null;
+  tkLastIdx  = -1;
+  clearTimeout(tkTimer);
+  tkRender();
+}
+
+function initTenkey() {
+  tkLastKey   = null;
+  tkLastIdx   = -1;
+  tkCommitted = '';
+  tkPending   = '';
+  clearTimeout(tkTimer);
+  tkRender();
+
+  const panel = document.getElementById('kana-tenkey');
+  if (!panel) return;
+
+  panel.addEventListener('click', e => {
+    const btn = e.target.closest('[data-key]');
+    if (!btn) return;
+    const key = btn.dataset.key;
+
+    if (key === 'del') {
+      clearTimeout(tkTimer);
+      if (tkPending) {
+        tkPending = '';
+        tkLastKey = null; tkLastIdx = -1;
+      } else if (tkCommitted.length > 0) {
+        tkCommitted = [...tkCommitted].slice(0, -1).join('');
+      }
+      tkRender();
+      return;
+    }
+
+    if (key === 'confirm') {
+      tkCommit();
+      checkReading();
+      return;
+    }
+
+    if (key === 'daku') {
+      clearTimeout(tkTimer);
+      if (tkPending) {
+        if (DAKUTEN_MAP[tkPending])    tkPending = DAKUTEN_MAP[tkPending];
+        else if (HANDAKUTEN_MAP[tkPending]) tkPending = HANDAKUTEN_MAP[tkPending];
+      } else if (tkCommitted.length) {
+        const arr = [...tkCommitted];
+        const c = arr[arr.length - 1];
+        arr[arr.length - 1] = DAKUTEN_MAP[c] || HANDAKUTEN_MAP[c] || c;
+        tkCommitted = arr.join('');
+      }
+      tkRender();
+      return;
+    }
+
+    if (key === 'small') {
+      clearTimeout(tkTimer);
+      if (tkPending && SMALL_MAP[tkPending]) {
+        tkPending = SMALL_MAP[tkPending];
+      } else if (tkCommitted.length) {
+        const arr = [...tkCommitted];
+        const c = arr[arr.length - 1];
+        if (SMALL_MAP[c]) arr[arr.length - 1] = SMALL_MAP[c];
+        tkCommitted = arr.join('');
+      }
+      tkRender();
+      return;
+    }
+
+    if (key === 'choon') {
+      tkCommit();
+      tkCommitted += 'ー';
+      tkRender();
+      return;
+    }
+
+    // 数字キー
+    const list = TENKEY_MAP[key];
+    if (!list) return;
+    clearTimeout(tkTimer);
+
+    if (tkLastKey === key) {
+      // 同じキー連打 → サイクル
+      tkLastIdx = (tkLastIdx + 1) % list.length;
+      tkPending = list[tkLastIdx];
+    } else {
+      // 別キー → 前の文字を確定してから新サイクル
+      tkCommitted += tkPending;
+      tkPending  = list[0];
+      tkLastKey  = key;
+      tkLastIdx  = 0;
+    }
+
+    // 1.2秒後に自動確定
+    tkTimer = setTimeout(tkCommit, 1200);
+    tkRender();
+  });
+}
+
 function checkReading() {
   if (answered) return;
+  tkCommit(); // 未確定文字を確定
   const inp = document.getElementById('ans-input');
-  const val = inp.value.trim();
-  if (!val) { inp.classList.add('shake'); setTimeout(() => inp.classList.remove('shake'), 500); return; }
+  const val = inp ? inp.value.trim() : '';
+  if (!val) {
+    if (inp) { inp.classList.add('shake'); setTimeout(() => inp.classList.remove('shake'), 500); }
+    return;
+  }
   answered = true;
-  inp.disabled = true;
-  document.getElementById('btn-check').disabled = true;
+  // テンキーを無効化
+  const panel = document.getElementById('kana-tenkey');
+  if (panel) panel.querySelectorAll('button').forEach(b => b.disabled = true);
   const q  = qs[idx];
   const ok = val === q.reading;
   results.push({ word: q.word, reading: q.reading, ok });
