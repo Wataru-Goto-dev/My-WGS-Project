@@ -294,6 +294,20 @@ body {
   text-align: center;
   letter-spacing: 0.2px;
 }
+.btn-abort {
+  padding: 8px 14px;
+  background: rgba(255,59,48,0.10);
+  color: var(--red);
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.btn-abort:active { background: rgba(255,59,48,0.22); }
 
 /* ── グローバル リセットボタン（全画面 固定）── */
 #btn-global-reset {
@@ -927,6 +941,7 @@ body {
   <div id="screen-quiz" class="screen">
     <div class="quiz-top-bar">
       <div class="quiz-info-bar" id="quiz-mode-info"></div>
+      <button class="btn-abort" onclick="confirmAbort()">中断する</button>
     </div>
     <div class="progress-row">
       <span class="progress-label" id="prog-text">問題 1 / 10</span>
@@ -1247,7 +1262,6 @@ const DATA = {
     { word:'衣服',   reading:'いふく',       sentence:'季節に合った衣服を着る。' },
     { word:'位置',   reading:'いち',         sentence:'地図で目的地の位置を確認した。' },
     { word:'囲む',   reading:'かこむ',       sentence:'校庭を囲む木がきれいだ。' },
-    { word:'胃袋',   reading:'いぶくろ',     sentence:'おいしい料理を食べて胃袋が満足した。' },
     { word:'印刷',   reading:'いんさつ',     sentence:'プリンターで書類を印刷した。' },
     { word:'英語',   reading:'えいご',       sentence:'英語の授業で発表した。' },
     { word:'栄養',   reading:'えいよう',     sentence:'野菜には栄養がたくさんある。' },
@@ -1305,6 +1319,7 @@ const DATA = {
     { word:'野菜',   reading:'やさい',       sentence:'野菜をしっかり食べる。' },
     { word:'最高',   reading:'さいこう',     sentence:'今日は最高の天気だ。' },
     { word:'材料',   reading:'ざいりょう',   sentence:'料理に必要な材料を買った。' },
+    { word:'砂漠',   reading:'さばく',       sentence:'砂漠には水がほとんどない。' },
   ],
   // ── 2学期（64字）──────────────────────────────────────────────
   2: [
@@ -1315,9 +1330,7 @@ const DATA = {
     { word:'産業',   reading:'さんぎょう',   sentence:'農業はこの地域の主な産業だ。' },
     { word:'散歩',   reading:'さんぽ',       sentence:'朝に公園を散歩した。' },
     { word:'残念',   reading:'ざんねん',     sentence:'試合に負けて残念だった。' },
-    { word:'武士',   reading:'ぶし',         sentence:'武士は刀を持っていた。' },
     { word:'氏名',   reading:'しめい',       sentence:'用紙に氏名を書いた。' },
-    { word:'歴史',   reading:'れきし',       sentence:'日本の歴史を授業で学んだ。' },
     { word:'司会',   reading:'しかい',       sentence:'学芸会で司会をした。' },
     { word:'試合',   reading:'しあい',       sentence:'サッカーの試合で活躍した。' },
     { word:'児童',   reading:'じどう',       sentence:'この学校の児童数は三百人だ。' },
@@ -1450,7 +1463,6 @@ const DATA = {
     { word:'縄跳び',   reading:'なわとび',        sentence:'縄跳びを百回連続で跳んだ。' },
     { word:'井戸',     reading:'いど',            sentence:'昔は井戸から水をくみ上げていた。' },
     { word:'沖縄',     reading:'おきなわ',        sentence:'沖縄県の海はとても青くてきれいだ。' },
-    { word:'大阪',     reading:'おおさか',        sentence:'大阪市は日本を代表する大都市だ。' },
     { word:'岐阜',     reading:'ぎふ',            sentence:'岐阜県は山に囲まれた内陸の県だ。' },
     { word:'富士山',   reading:'ふじさん',        sentence:'富士山は日本一高い山として有名だ。' },
     { word:'被害',     reading:'ひがい',          sentence:'台風で農作物に大きな被害が出た。' },
@@ -1465,6 +1477,9 @@ const DATA = {
   }  // 4年生 end
 };
 
+// ================================================================
+//  回データ（学年・学期・回 → 対象漢字リスト）
+// ================================================================
 // ================================================================
 //  状態
 // ================================================================
@@ -1506,9 +1521,7 @@ function pickGrade(grade, btn) {
   sel.type     = null;
   sel.count    = null;
   currentStep  = 2;
-  // 学期ボタン有効化
   updateSemesterBtns('sem-btn', grade);
-  // 選択リセット
   document.querySelectorAll('#grp-semester .choice-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('#grp-type .choice-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('#grp-count .choice-btn').forEach(b => b.classList.remove('selected'));
@@ -1519,7 +1532,6 @@ function pickSemester(semester, btn) {
   if (btn.classList.contains('unavailable')) return;
   sel.semester = semester;
   sel.type     = null;
-  // 穴埋めボタン制御
   updateFillBtn(sel.grade, semester);
   document.querySelectorAll('#grp-type .choice-btn').forEach(b => b.classList.remove('selected'));
   currentStep = 3;
@@ -1537,7 +1549,6 @@ function pickType(type, btn) {
 
 function pickCount(count, btn) {
   sel.count = count;
-  // 確認画面を更新
   document.getElementById('conf-grade').textContent    = sel.grade + '年生';
   document.getElementById('conf-semester').textContent = sel.semester === 0 ? '全学期' : sel.semester + '学期';
   document.getElementById('conf-type').textContent     = typeLabel(sel.type);
@@ -1567,6 +1578,17 @@ function typeLabel(type) {
   return type === 'random'  ? 'ランダム（混合）' :
          type === 'reading' ? '読みのみ' :
          type === 'writing' ? '書きのみ' : '穴埋めのみ';
+}
+
+function buildPool(grade, semester) {
+  if (semester === 0) {
+    return [
+      ...(DATA[grade][1] || []),
+      ...(DATA[grade][2] || []),
+      ...(DATA[grade][3] || []),
+    ];
+  }
+  return [...(DATA[grade][semester] || [])];
 }
 
 // ================================================================
@@ -1608,13 +1630,7 @@ function pickPdf(kind, val, btn) {
     pdfSel.qtype = null;
     document.querySelectorAll('#pdf-grp-type .choice-btn').forEach(b => b.classList.remove('selected'));
     const fillBtn = document.querySelector('#pdf-grp-type .choice-btn:last-child');
-    if (fillBtn) {
-      fillBtn.classList.remove('unavailable');
-    }
-    // 全学期ボタンは常に有効（全学期プールには穴埋め対応データが含まれる）
-    if (val === 0) {
-      if (fillBtn) fillBtn.classList.remove('unavailable');
-    }
+    if (fillBtn) fillBtn.classList.remove('unavailable');
   }
   document.getElementById('btn-pdf-gen').disabled =
     !(pdfSel.grade && pdfSel.semester !== null && pdfSel.qtype && pdfSel.count);
@@ -1624,10 +1640,7 @@ function pickPdf(kind, val, btn) {
 //  PDF 生成
 // ================================================================
 function generatePdf() {
-  const allData = pdfSel.semester === 0
-    ? [...DATA[pdfSel.grade][1], ...DATA[pdfSel.grade][2], ...DATA[pdfSel.grade][3]]
-    : DATA[pdfSel.grade][pdfSel.semester];
-  const pool  = shuffle([...allData]);
+  const pool  = shuffle([...buildPool(pdfSel.grade, pdfSel.semester)]);
   const count = pdfSel.count;
   const items = pool.slice(0, count);
   let types;
@@ -1721,12 +1734,19 @@ function buildPdfHtml(grade, semester, qtype, count, questions) {
 <title>4年生 ${semLabel} 漢字テスト（${typeStr}・${count}問）</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-@page { size: A4 portrait; margin: 12mm 14mm; }
+@page { size: A4 portrait; margin: 15mm; }
+html {
+  background-color: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
 body {
   font-family: 'Hiragino Kaku Gothic ProN','Hiragino Sans','Yu Gothic',Meiryo,sans-serif;
   font-size: 11pt;
   color: #111;
-  background: white;
+  background-color: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 /* 印刷コントロール（印刷時は非表示） */
@@ -1792,11 +1812,11 @@ body {
 .meta-field .meta-label { white-space: nowrap; }
 .meta-underline {
   border-bottom: 1.5px solid #333;
-  min-width: 120px;
-  height: 18px;
+  min-width: 30mm;
+  height: 5mm;
   flex: 1;
 }
-.meta-field.score .meta-underline { min-width: 50px; flex: none; }
+.meta-field.score .meta-underline { min-width: 12mm; flex: none; }
 
 /* 注意書き */
 .test-note {
@@ -1815,11 +1835,11 @@ body {
 .q-card {
   border: 1px solid #bbb;
   border-radius: 4px;
-  padding: 7px 9px;
-  min-height: 88px;
+  padding: 2mm 3mm;
+  min-height: 22mm;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1mm;
 }
 
 .q-num {
@@ -1865,9 +1885,9 @@ body {
 .ans-line {
   border-bottom: 1.5px solid #333;
   width: 85%;
-  height: 22px;
+  height: 6mm;
   display: block;
-  margin-top: 2px;
+  margin-top: 1mm;
 }
 
 /* 書き・穴埋め答え欄（マス目） */
@@ -1877,8 +1897,8 @@ body {
   margin-top: 3px;
 }
 .ans-box {
-  width: 42px;
-  height: 42px;
+  width: 11mm;
+  height: 11mm;
   border: 1.5px solid #333;
   display: inline-block;
   position: relative;
@@ -1918,8 +1938,21 @@ ruby rt {
 
 @media print {
   .print-controls { display: none !important; }
-  body { margin: 0; }
+  html, body {
+    margin: 0;
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   .q-card { break-inside: avoid; }
+  .q-label-badge.reading { background: #dceefb !important; color: #1a5f9e !important; border: 1px solid #9bc8ef !important; }
+  .q-label-badge.writing { background: #ede7f6 !important; color: #5e35b1 !important; border: 1px solid #c5b0e6 !important; }
+  .q-label-badge.fill    { background: #e8f5e9 !important; color: #2e7d32 !important; border: 1px solid #a5d6a7 !important; }
 }
 </style>
 </head>
@@ -1932,7 +1965,7 @@ ruby rt {
 </div>
 
 <div class="test-header">
-  <div class="test-title">小学4年生 ${semLabel} 漢字テスト（${typeStr}・${count}問）</div>
+  <div class="test-title">小学4年生 ${semLabel}${rndLabel} 漢字テスト（${typeStr}・${count}問）</div>
   <div class="test-meta">
     <div class="meta-field" style="flex:2">
       <span class="meta-label">名前：</span>
@@ -1978,10 +2011,7 @@ function shuffle(arr) {
 
 function startQuiz() {
   const count  = sel.count || 10;
-  const rawPool = sel.semester === 0
-    ? [...DATA[sel.grade][1], ...DATA[sel.grade][2], ...DATA[sel.grade][3]]
-    : [...DATA[sel.grade][sel.semester]];
-  const pool   = shuffle(rawPool);
+  const pool   = shuffle([...buildPool(sel.grade, sel.semester)]);
   const qtypes = buildQtypes(sel.type, count);
   qs       = pool.slice(0, count).map((q, i) => ({ ...q, qtype: qtypes[i] }));
   idx      = 0;
@@ -2336,6 +2366,12 @@ document.addEventListener('keydown', function(e) {
     nextQ();
   }
 });
+
+function confirmAbort() {
+  if (window.confirm('テストを中断して\nトップにもどりますか？')) {
+    goHome();
+  }
+}
 
 function goHome() {
   sel = { grade: null, semester: null, type: null, count: null };
