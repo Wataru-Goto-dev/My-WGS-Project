@@ -813,6 +813,123 @@ body {
 }
 .shake { animation: shake 0.42s ease; }
 
+/* ── カスタムリスト ──────────── */
+.custom-list-wrap {
+  background: var(--fill1);
+  border-radius: var(--r-md);
+  padding: 4px 16px;
+  margin-bottom: 16px;
+}
+.custom-list-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sep);
+  cursor: pointer;
+  gap: 10px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.custom-list-item:last-child { border-bottom: none; }
+.custom-list-item:active { opacity: 0.7; }
+.custom-list-name {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text1);
+}
+.custom-list-meta {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.custom-list-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.btn-icon {
+  width: 36px; height: 36px;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 16px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-icon-edit { background: rgba(0,122,255,0.10); color: var(--blue); }
+.btn-icon-edit:active { background: rgba(0,122,255,0.22); transform: scale(0.92); }
+.btn-icon-del  { background: rgba(255,59,48,0.10); color: var(--red); }
+.btn-icon-del:active  { background: rgba(255,59,48,0.22); transform: scale(0.92); }
+.custom-empty {
+  text-align: center;
+  color: var(--text2);
+  font-size: 15px;
+  padding: 28px 0;
+  line-height: 1.8;
+}
+.field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  margin-top: 18px;
+  display: block;
+}
+.text-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--sep);
+  border-radius: var(--r-md);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  color: var(--text1);
+  background: var(--card);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.text-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(0,122,255,0.14);
+}
+textarea.text-input {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.6;
+}
+.kanji-preview {
+  background: var(--fill1);
+  border-radius: var(--r-sm);
+  padding: 10px 14px;
+  margin-top: 8px;
+  min-height: 38px;
+  line-height: 1.9;
+  font-size: 15px;
+  color: var(--text1);
+}
+.custom-quiz-card {
+  background: var(--fill1);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+.custom-quiz-card .cq-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text1);
+  margin-bottom: 4px;
+}
+.custom-quiz-card .cq-detail {
+  font-size: 14px;
+  color: var(--text2);
+}
+
 /* ── レスポンシブ ─────────────── */
 @media (max-width: 380px) {
   body { padding: 12px 10px 28px; }
@@ -865,6 +982,7 @@ body {
       </button>
     </div>
     <button class="btn-sub" onclick="openPdfModal()">📄 プリントテストを作る</button>
+    <button class="btn-sub" onclick="openCustomListScreen()" style="margin-top:10px;">📋 カスタムリスト</button>
   </div>
 
   <!-- ========== STEP 2: 学期選択 ========== -->
@@ -1018,6 +1136,62 @@ body {
       もう一度チャレンジ！🔥
     </button>
     <button class="btn-sub" onclick="goHome()">🏠 ホームにもどる</button>
+  </div>
+
+  <!-- ========== カスタムリスト管理画面 ========== -->
+  <div id="screen-custom-list" class="screen">
+    <button class="btn-back" onclick="goHome()">‹ もどる</button>
+    <div class="step-title">📋 カスタムリスト</div>
+    <div id="custom-list-container"></div>
+    <button class="btn-primary" onclick="openCustomEdit(null)" style="margin-bottom:0;">
+      ＋ 新しいリストを作る
+    </button>
+  </div>
+
+  <!-- ========== カスタムリスト編集画面 ========== -->
+  <div id="screen-custom-edit" class="screen">
+    <button class="btn-back" onclick="showScreen('screen-custom-list','back')">‹ もどる</button>
+    <div class="step-title" id="custom-edit-title">📝 リストを作る</div>
+
+    <label class="field-label" for="custom-name-input">リスト名</label>
+    <input class="text-input" id="custom-name-input" type="text"
+           placeholder="例：漢字テスト6月" maxlength="30">
+
+    <label class="field-label" for="custom-kanji-input">漢字リスト</label>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.7;">
+      漢字を入力してください（読点・カンマ・スペース・中黒で区切ります）
+    </div>
+    <textarea class="text-input" id="custom-kanji-input"
+              placeholder="例：愛・案・以・衣・位・茨・印"
+              oninput="updateKanjiPreview()"></textarea>
+    <div class="kanji-preview" id="kanji-preview">
+      <span style="color:var(--text2);">ここに漢字リストが表示されます</span>
+    </div>
+
+    <button class="btn-primary green" onclick="saveCustomList()" style="margin-top:22px;">
+      保存する ✔
+    </button>
+    <button class="btn-sub" onclick="showScreen('screen-custom-list','back')">キャンセル</button>
+  </div>
+
+  <!-- ========== カスタムリスト テスト設定画面 ========== -->
+  <div id="screen-custom-quiz-setup" class="screen">
+    <button class="btn-back" onclick="showScreen('screen-custom-list','back')">‹ もどる</button>
+    <div class="step-title">🎯 テスト設定</div>
+    <div class="custom-quiz-card">
+      <div class="cq-title" id="cq-title">-</div>
+      <div class="cq-detail" id="cq-detail">-</div>
+    </div>
+    <div class="step-title" style="font-size:18px;margin-bottom:14px;">🔢 問題数を選ぼう</div>
+    <div class="choice-grid cols-3" id="grp-custom-count">
+      <button class="choice-btn" onclick="pickCustomCount(10,this)">10問</button>
+      <button class="choice-btn" onclick="pickCustomCount(15,this)">15問</button>
+      <button class="choice-btn" onclick="pickCustomCount(20,this)">20問</button>
+    </div>
+    <button class="btn-primary green" id="btn-custom-start"
+            onclick="startCustomQuiz()" disabled>スタート！🚀</button>
+    <button class="btn-sub" id="btn-custom-pdf"
+            onclick="generateCustomPdf()" disabled>📄 プリントテストを作る</button>
   </div>
 
 </div><!-- /card -->
@@ -1541,6 +1715,13 @@ let isDrawing = false;
 let canvasCSS = 0;
 
 let pdfSel = { grade: null, semester: null, qtype: null, count: null };
+
+// カスタムリスト用状態
+let customLists    = [];
+let selCustomList  = null;
+let selCustomCount = null;
+let editingListIdx = null;
+let isCustomMode   = false;
 
 // ================================================================
 //  ステップ ナビゲーション
@@ -2597,9 +2778,284 @@ document.addEventListener('keydown', function(e) {
 
 function goHome() {
   sel = { grade: null, semester: null, type: null, count: null };
+  isCustomMode = false;
   document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+  // 「もう一度」ボタンを通常モードに戻す
+  const retryBtn = document.querySelector('#screen-result .btn-primary.red');
+  if (retryBtn) retryBtn.onclick = startQuiz;
   currentStep = 1;
   showScreen('screen-step1', 'back');
+}
+
+// ================================================================
+//  カスタムリスト機能
+// ================================================================
+const CL_KEY = 'kanji-custom-lists';
+
+function clLoad() {
+  try {
+    const d = localStorage.getItem(CL_KEY);
+    customLists = d ? JSON.parse(d) : [];
+  } catch(e) { customLists = []; }
+}
+
+function clSave() {
+  localStorage.setItem(CL_KEY, JSON.stringify(customLists));
+}
+
+function escH(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function parseKanji(str) {
+  return str.split(/[、，,・\s　\n\r]+/).map(s => s.trim()).filter(s => s.length > 0);
+}
+
+// ── 管理画面を開く ────────────────────────────────────────────
+function openCustomListScreen() {
+  clLoad();
+  renderCustomList();
+  showScreen('screen-custom-list');
+}
+
+function renderCustomList() {
+  const container = document.getElementById('custom-list-container');
+  if (customLists.length === 0) {
+    container.innerHTML =
+      '<div class="custom-empty">まだリストがありません<br>「＋ 新しいリストを作る」から追加しましょう！</div>';
+    return;
+  }
+  container.innerHTML =
+    '<div class="custom-list-wrap">' +
+    customLists.map((list, i) => `
+      <div class="custom-list-item" onclick="selectCustomList(${i})">
+        <div style="flex:1;min-width:0;">
+          <div class="custom-list-name">${escH(list.name)}</div>
+          <div class="custom-list-meta">${list.kanji.length}文字</div>
+        </div>
+        <div class="custom-list-btns" onclick="event.stopPropagation()">
+          <button class="btn-icon btn-icon-edit" onclick="openCustomEdit(${i})" title="編集">✏️</button>
+          <button class="btn-icon btn-icon-del"  onclick="deleteCustomList(${i})" title="削除">🗑️</button>
+        </div>
+      </div>`
+    ).join('') +
+    '</div>';
+}
+
+// ── リスト選択 → テスト設定画面 ────────────────────────────────
+function selectCustomList(i) {
+  selCustomList  = customLists[i];
+  selCustomCount = null;
+  document.getElementById('cq-title').textContent  = selCustomList.name;
+  document.getElementById('cq-detail').textContent = selCustomList.kanji.length + '文字のリスト　穴埋め形式';
+  document.querySelectorAll('#grp-custom-count .choice-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('btn-custom-start').disabled = true;
+  document.getElementById('btn-custom-pdf').disabled   = false;
+  showScreen('screen-custom-quiz-setup');
+}
+
+function pickCustomCount(count, btn) {
+  selCustomCount = count;
+  document.querySelectorAll('#grp-custom-count .choice-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('btn-custom-start').disabled = false;
+}
+
+// ── 編集画面 ────────────────────────────────────────────────────
+function openCustomEdit(listIdx) {
+  editingListIdx = listIdx;
+  if (listIdx === null) {
+    document.getElementById('custom-edit-title').textContent = '📝 リストを作る';
+    document.getElementById('custom-name-input').value  = '';
+    document.getElementById('custom-kanji-input').value = '';
+    document.getElementById('kanji-preview').innerHTML  =
+      '<span style="color:var(--text2);">ここに漢字リストが表示されます</span>';
+  } else {
+    const list = customLists[listIdx];
+    document.getElementById('custom-edit-title').textContent = '✏️ リストを編集';
+    document.getElementById('custom-name-input').value  = list.name;
+    document.getElementById('custom-kanji-input').value = list.kanji.join('・');
+    updateKanjiPreview();
+  }
+  showScreen('screen-custom-edit');
+}
+
+function updateKanjiPreview() {
+  const val   = document.getElementById('custom-kanji-input').value;
+  const items = parseKanji(val);
+  const preview = document.getElementById('kanji-preview');
+  if (items.length === 0) {
+    preview.innerHTML = '<span style="color:var(--text2);">ここに漢字リストが表示されます</span>';
+    return;
+  }
+  preview.innerHTML =
+    items.map(k =>
+      `<span style="display:inline-block;margin:1px 5px;font-weight:700;">${escH(k)}</span>`
+    ).join('') +
+    `<span style="font-size:12px;color:var(--text2);margin-left:6px;">(計${items.length}文字)</span>`;
+}
+
+function saveCustomList() {
+  const name  = document.getElementById('custom-name-input').value.trim();
+  const kanji = parseKanji(document.getElementById('custom-kanji-input').value);
+  if (!name)          { alert('リスト名を入力してください');  return; }
+  if (!kanji.length)  { alert('漢字を1文字以上入力してください'); return; }
+
+  if (editingListIdx === null) {
+    customLists.push({ id: Date.now().toString(), name, kanji });
+  } else {
+    customLists[editingListIdx] = { ...customLists[editingListIdx], name, kanji };
+  }
+  clSave();
+  clLoad();
+  renderCustomList();
+  showScreen('screen-custom-list', 'back');
+}
+
+function deleteCustomList(i) {
+  if (!confirm(`「${customLists[i].name}」を削除しますか？`)) return;
+  customLists.splice(i, 1);
+  clSave();
+  renderCustomList();
+}
+
+// ── DATA検索：漢字1文字からquestion itemを探す ─────────────────
+function findKanjiItem(ch) {
+  for (const grade of [3, 4]) {
+    for (const sem of [1, 2, 3]) {
+      if (!DATA[grade] || !DATA[grade][sem]) continue;
+      for (const item of DATA[grade][sem]) {
+        const kpart = item.word.replace(/[ぁ-ん]/g, '');
+        if (kpart === ch || kpart.includes(ch)) return item;
+      }
+    }
+  }
+  return null;
+}
+
+// カスタムリストからquestion配列を構築
+function buildCustomPool(kanjiList) {
+  return kanjiList.map(ch => {
+    const found = findKanjiItem(ch);
+    if (found) {
+      return { ...found, qtype: 'fill' };
+    }
+    // DATAに無い場合は書き問題（漢字自体を題）
+    return { word: ch, reading: ch, sentence: null, qtype: 'writing', noData: true };
+  });
+}
+
+// ── カスタムクイズ開始 ─────────────────────────────────────────
+function startCustomQuiz() {
+  if (!selCustomList || !selCustomCount) return;
+  const allPool = buildCustomPool(selCustomList.kanji);
+  qs       = shuffle([...allPool]).slice(0, selCustomCount);
+  idx      = 0;
+  score    = 0;
+  answered = false;
+  results  = [];
+  isCustomMode = true;
+
+  document.getElementById('quiz-mode-info').textContent =
+    selCustomList.name + '　穴埋め · ' + selCustomCount + '問';
+
+  // 結果画面の「もう一度」ボタンをカスタム用に差し替え
+  const retryBtn = document.querySelector('#screen-result .btn-primary.red');
+  if (retryBtn) retryBtn.onclick = startCustomQuiz;
+
+  showScreen('screen-quiz');
+  renderQ();
+}
+
+// ── カスタムリスト PDF ─────────────────────────────────────────
+function generateCustomPdf() {
+  if (!selCustomList) return;
+  const count = selCustomCount || Math.min(selCustomList.kanji.length, 20);
+  const pool  = shuffle([...buildCustomPool(selCustomList.kanji)]).slice(0, count);
+
+  const qHtml = pool.map((q, i) => {
+    let inner = '';
+    if (q.qtype === 'fill' && q.sentence) {
+      const blank = `<ruby>（${'　'.repeat(q.word.length)}）<rt>${q.reading}</rt></ruby>`;
+      const sent  = q.sentence.includes(q.word)
+        ? q.sentence.replace(q.word, blank)
+        : q.sentence + '　' + blank;
+      inner = `
+        <div class="q-label-badge fill">穴埋め</div>
+        <div class="q-sentence">${sent}</div>
+        <div class="q-inst">（　）に漢字を書きましょう</div>
+        <div class="ans-with-ruby">
+          <span class="ans-boxes">${[...q.word.replace(/[ぁ-ん]/g,'')].map(() => '<span class="ans-box"></span>').join('')}</span>
+        </div>`;
+    } else {
+      inner = `
+        <div class="q-label-badge writing">書き</div>
+        <div class="q-inst">漢字で書きましょう</div>
+        <div class="ans-with-ruby">
+          <span class="ans-boxes">${[...q.word].map(() => '<span class="ans-box"></span>').join('')}</span>
+          <div class="ans-furigana">よみ：${q.reading}</div>
+        </div>`;
+    }
+    return `<div class="q-item"><div class="q-num">${i + 1}</div>${inner}</div>`;
+  }).join('');
+
+  const html = buildCustomPdfPage(selCustomList.name, qHtml);
+  const w = window.open('', '_blank');
+  if (!w) { alert('ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください。'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  w.print();
+}
+
+function buildCustomPdfPage(title, qHtml) {
+  return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>${escH(title)}　漢字テスト</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Kaku Gothic ProN','Hiragino Sans',sans-serif;background:#fff;color:#000;}
+@page{size:A4 portrait;margin:15mm;}
+@media print{body{margin:0;}}
+.page{width:100%;padding:0;background:#fff;}
+.hdr{border-bottom:2.5px solid #000;padding-bottom:4mm;margin-bottom:5mm;}
+.hdr-title{font-size:17pt;font-weight:800;text-align:center;margin-bottom:3mm;}
+.hdr-row{display:flex;gap:6mm;justify-content:flex-end;}
+.hdr-cell .lbl{font-size:8pt;color:#555;margin-bottom:1mm;}
+.hdr-cell .box{border-bottom:1.5px solid #333;min-width:40mm;height:6mm;}
+.questions{columns:2;column-gap:7mm;}
+.q-item{break-inside:avoid;margin-bottom:5mm;padding:3mm 4mm;border:1px solid #ddd;border-radius:2.5mm;}
+.q-num{font-size:9pt;font-weight:800;color:#777;margin-bottom:1.5mm;}
+.q-label-badge{font-size:8pt;font-weight:700;padding:1mm 3mm;border-radius:2.5mm;display:inline-block;margin-bottom:2mm;}
+.q-label-badge.fill{background:#e5f7ec;color:#1a6e34;}
+.q-label-badge.writing{background:#ede8ff;color:#5c35cc;}
+.q-sentence{font-size:11pt;font-weight:600;line-height:2.3;margin-bottom:1mm;}
+.q-sentence ruby rt{font-size:7pt;}
+.q-inst{font-size:8.5pt;color:#555;margin-bottom:2mm;}
+.ans-with-ruby{display:flex;flex-direction:column;align-items:flex-start;gap:2mm;}
+.ans-boxes{display:inline-flex;gap:2mm;}
+.ans-box{width:12mm;height:12mm;border:1.5px solid #444;border-radius:1.5mm;display:inline-block;}
+.ans-furigana{font-size:9pt;color:#444;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-title">📋 ${escH(title)}　漢字テスト</div>
+    <div class="hdr-row">
+      <div class="hdr-cell"><div class="lbl">名前</div><div class="box" style="min-width:60mm;"></div></div>
+      <div class="hdr-cell"><div class="lbl">日付</div><div class="box" style="min-width:35mm;"></div></div>
+      <div class="hdr-cell"><div class="lbl">点数</div><div class="box" style="min-width:20mm;"></div></div>
+    </div>
+  </div>
+  <div class="questions">${qHtml}</div>
+</div>
+</body>
+</html>`;
 }
 </script>
 </body>
