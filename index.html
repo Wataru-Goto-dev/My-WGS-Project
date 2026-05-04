@@ -294,20 +294,6 @@ body {
   text-align: center;
   letter-spacing: 0.2px;
 }
-.btn-abort {
-  padding: 8px 14px;
-  background: rgba(255,59,48,0.10);
-  color: var(--red);
-  border: none;
-  border-radius: var(--r-sm);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  transition: background 0.15s ease;
-}
-.btn-abort:active { background: rgba(255,59,48,0.22); }
 
 /* ── グローバル リセットボタン（全画面 固定）── */
 #btn-global-reset {
@@ -1002,7 +988,6 @@ body {
   <div id="screen-quiz" class="screen">
     <div class="quiz-top-bar">
       <div class="quiz-info-bar" id="quiz-mode-info"></div>
-      <button class="btn-abort" onclick="confirmAbort()">中断する</button>
     </div>
     <div class="progress-row">
       <span class="progress-label" id="prog-text">問題 1 / 10</span>
@@ -1039,7 +1024,7 @@ body {
 </div><!-- /app -->
 
 <!-- ========== グローバル リセットボタン ========== -->
-<button id="btn-global-reset" onclick="confirmReset()">🔄 リセット</button>
+<button id="btn-global-reset" onclick="confirmReset()">⛔ 中止</button>
 
 <!-- ========== PDF モーダル ========== -->
 <div class="pdf-overlay" id="pdf-overlay" onclick="overlayClick(event)">
@@ -2609,11 +2594,6 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-function confirmAbort() {
-  if (window.confirm('テストを中断して\nトップにもどりますか？')) {
-    goHome();
-  }
-}
 
 function goHome() {
   sel = { grade: null, semester: null, type: null, count: null };
